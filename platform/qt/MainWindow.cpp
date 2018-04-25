@@ -1822,6 +1822,23 @@ void MainWindow::startExportAVFoundation(QString fileName)
         QFile( wavFileName ).remove();
     }
 
+    //path to output folder
+    QString path = QFileInfo( m_exportQueue.first()->exportFileName() ).absolutePath(); 
+    QString filename = "/tmp/Data.txt";
+    QFile file1(filename);
+    file1.open(QIODevice::WriteOnly);
+    file1.write(path.toUtf8());
+    file1.close();
+    
+    //path to MacOS folder(applications
+    QString program = QCoreApplication::applicationDirPath(); 
+    QString filename2 = "/tmp/Data2.txt";
+    QFile file2(filename2);
+    file2.open(QIODevice::WriteOnly);
+    file2.write(program.toUtf8());
+    file2.close();
+
+
     //If we don't like amaze we switch it off again
     if( !ui->actionAlwaysUseAMaZE->isChecked() ) setMlvDontAlwaysUseAmaze( m_pMlvObject );
 
@@ -4433,7 +4450,11 @@ void MainWindow::exportHandler( void )
         //Export is ready
         exportRunning = false;
 
-        if( !m_exportAbortPressed ) QMessageBox::information( this, tr( "Export" ), tr( "Export is ready." ) );
+    //enabling HDR processing, no questions asked. Yet.
+    QProcess process;
+    process.startDetached("/bin/bash", QStringList()<< "HDR_MOV.command");
+
+        if( !m_exportAbortPressed ) QMessageBox::information( this, tr( "Export" ), tr( "HDR script running." ) );
         else QMessageBox::information( this, tr( "Export" ), tr( "Export aborted." ) );
 
         //Caching is in which state? Set it!
