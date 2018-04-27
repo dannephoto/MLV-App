@@ -164,7 +164,7 @@ fi
 #if running tif folders you probably have audio already
 if ls *.wav
 then
-wav=$(printf "%s\n" -i $(ls *.{MOV,mov,mp4,MP4,mkv,MKV,avi,AVI} | grep -v 'HDR_' | head -1 | cut -d "." -f1).wav)
+wav=$(printf "%s\n" -i $(ls *.wav | head -1)
 acodec=$(printf "%s\n" -c:v copy -c:a aac)
 fi
 
@@ -319,7 +319,7 @@ fi
 #if running tif folders you probably have audio already
 if ls *.wav
 then
-wav=$(printf "%s\n" -i $(ls *.{MOV,mov,mp4,MP4,mkv,MKV,avi,AVI} | grep -v 'HDR_' | head -1 | cut -d "." -f1).wav)
+wav=$(printf "%s\n" -i $(ls *.wav | head -1)
 acodec=$(printf "%s\n" -c:v copy -c:a aac)
 fi
 
@@ -471,7 +471,7 @@ fi
 #if running tif folders you probably have audio already
 if ls *.wav
 then
-wav=$(printf "%s\n" -i $(ls *.{MOV,mov,mp4,MP4,mkv,MKV,avi,AVI} | grep -v 'HDR_' | head -1 | cut -d "." -f1).wav)
+wav=$(printf "%s\n" -i $(ls *.wav | head -1)
 acodec=$(printf "%s\n" -c:v copy -c:a aac)
 fi
 
@@ -622,7 +622,7 @@ fi
 #if running tif folders you probably have audio already
 if ls *.wav
 then
-wav=$(printf "%s\n" -i $(ls *.{MOV,mov,mp4,MP4,mkv,MKV,avi,AVI} | grep -v 'HDR_' | head -1 | cut -d "." -f1).wav)
+wav=$(printf "%s\n" -i $(ls *.wav | head -1)
 acodec=$(printf "%s\n" -c:v copy -c:a aac)
 fi
 
