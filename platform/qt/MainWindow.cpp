@@ -1177,10 +1177,17 @@ void MainWindow::startExportPipe(QString fileName)
     QString program = QString( "ffmpeg" );
 #else
     QString program = QCoreApplication::applicationDirPath();
+    //path to MacOS folder(applications. Before appending
+    QString filename2 = "/tmp/Data2.txt";
+    QFile file2(filename2);
+    file2.open(QIODevice::WriteOnly);
+    file2.write(program.toUtf8());
+    file2.close();
+    //back to append
     program.append( QString( "/ffmpeg\"" ) );
     program.prepend( QString( "\"" ) );
 
-    //path to output folder
+    //path to output folder. Needed for bash script workflows
     QString path = QFileInfo( m_exportQueue.first()->exportFileName() ).absolutePath(); 
     QString filename = "/tmp/Data.txt";
     QFile file1(filename);
@@ -1188,13 +1195,6 @@ void MainWindow::startExportPipe(QString fileName)
     file1.write(path.toUtf8());
     file1.close();
     
-    //path to MacOS folder(applications
-    QString filename2 = "/tmp/Data2.txt";
-    QFile file2(filename2);
-    file2.open(QIODevice::WriteOnly);
-    file2.write(program.toUtf8());
-    file2.close();
-
 #endif
 
 #ifdef STDOUT_SILENT
@@ -1210,6 +1210,13 @@ void MainWindow::startExportPipe(QString fileName)
     QString resolution = QString( "%1x%2" ).arg( getMlvWidth( m_pMlvObject ) ).arg( getMlvHeight( m_pMlvObject ) );
     if( m_codecProfile == CODEC_TIFF )
     {
+
+	//working with HDR tif files. Bash script need to know about this. Send a file tmp which bash can look for
+        QString filename3 = "/tmp/tif_creation";
+        QFile file3(filename3);
+        file3.open(QIODevice::WriteOnly);
+        file3.close();
+
         //Creating a folder with the initial filename
         QString folderName = QFileInfo( fileName ).path();
         QString shortFileName = QFileInfo( fileName ).fileName();
@@ -1218,6 +1225,13 @@ void MainWindow::startExportPipe(QString fileName)
 
         QDir dir;
         dir.mkpath( folderName );
+
+        //we also need to know HDR fps from the actual MLV files since tif doesn´t reveal frames per second. 
+        QString fps = locale.toString( getFramerate() );
+        QFile file5(folderName + "/fps");
+        file5.open(QIODevice::WriteOnly);
+        file5.write(fps.toUtf8());
+        file5.close();
 
         //Now add the numbered filename
         output = folderName;

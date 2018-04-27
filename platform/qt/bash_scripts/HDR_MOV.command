@@ -29,11 +29,20 @@ rm /tmp/KILLMOV
 rm /tmp/progress_bar.command
  
 #list files for multiprocessing
+#first check for tif creation
+if [ -f /tmp/tif_creation ]
+then
+rm /tmp/tif_creation
+find . -maxdepth 2 -name '*.tif' -print0 | xargs -0 -n1 dirname | sort --unique | grep -v HDR_ORIGINALS > /tmp/HDRMOV
+split -l $(( $( wc -l < /tmp/HDRMOV ) / 4 + 1 )) /tmp/HDRMOV /tmp/HDRMOV
+rm /tmp/HDRMOV
+else
 ls *.{MOV,mov,mp4,MP4,mkv,MKV,avi,AVI} | grep -v 'HDR_' > /tmp/HDRMOV
 split -l $(( $( wc -l < /tmp/HDRMOV ) / 4 + 1 )) /tmp/HDRMOV /tmp/HDRMOV
 rm /tmp/HDRMOV
+fi
 
-if grep 'MOV\|mov\|mp4\|MP4\|mkv\|MKV\|avi\|AVI' /tmp/HDRMOVaa
+if grep 'MOV\|mov\|mp4\|MP4\|mkv\|MKV\|avi\|AVI\|./' /tmp/HDRMOVaa
 then
 cat <<'EOF' > /tmp/HDR_script.command
 #!/bin/bash
@@ -42,24 +51,35 @@ cd "$(cat /tmp/Data.txt)"
 #progress_bar
 open /tmp/progress_bar.command &
 
-while grep 'MOV\|mov\|mp4\|MP4\|mkv\|MKV\|avi\|AVI' /tmp/HDRMOVaa; do
-#build a temp folder
+while grep 'MOV\|mov\|mp4\|MP4\|mkv\|MKV\|avi\|AVI\|./' /tmp/HDRMOVaa; do
+#build a temp folder only if it´s not a folder
+if ! grep './' /tmp/HDRMOVaa
+then
 mkdir -p $(cat /tmp/HDRMOVaa | head -1 | cut -d "." -f1)
-tmp="$(cat /tmp/HDRMOVaa | head -1 | cut -d "." -f1)"
 mv $(cat /tmp/HDRMOVaa | head -1) $(cat /tmp/HDRMOVaa | head -1 | cut -d "." -f1)
-cd "$tmp"
-
+cd "$(cat /tmp/HDRMOVaa | head -1 | cut -d "." -f1)"
+#spit out tif files
 ffmpeg -i $(cat /tmp/HDRMOVaa | head -1) -pix_fmt rgb24 %06d.tif
+else
+#seems we have tif folders
+cd "$(cat /tmp/HDRMOVaa | head -1 | cut -d '/' -f2)"
+fi
 
 #crop and rescale is needed is needed after aligning. Will take place in #output cropped and aligned images section
+#check for tif folders
+if ! grep './' /tmp/HDRMOVaa
+then
 cr_W=$(echo $(exiftool $(cat /tmp/HDRMOVaa | head -1) | awk '/Image Size/ { print $4,$5; exit }' | cut -d ":" -f2 | cut -d "x" -f1 ))
 cr_H=$(echo $(exiftool $(cat /tmp/HDRMOVaa | head -1) | awk '/Image Size/ { print $4,$5; exit }' | cut -d ":" -f2 | cut -d "x" -f2 ))
+else
+cr_W=$(echo $(exiftool $(echo *_000000.tif) | awk '/Image Size/ { print $4,$5; exit }' | cut -d ":" -f2 | cut -d "x" -f1 ))
+cr_H=$(echo $(exiftool $(echo *_000000.tif) | awk '/Image Size/ { print $4,$5; exit }' | cut -d ":" -f2 | cut -d "x" -f2 ))
+fi
 cr_Ws=$(echo $cr_W*0.98 | bc -l | cut -d "." -f1)
 cr_Hs=$(echo $cr_H*0.98 | bc -l | cut -d "." -f1)
 crp_fix=$(echo crop=$cr_Ws:$cr_Hs,scale=$cr_W:$cr_H)
 
 #First script combines enfused and aligned tif files then exports it to a prores mov file
-
 while grep -E "tif" <<< $(find . -maxdepth 1 -iname '*.tif')
 do
 #align images and rename
@@ -132,7 +152,6 @@ rm 00001.tiff 00002.tiff 0001.tiff 0002.tiff 001.tiff 002.tiff 01.tiff 02.tiff 1
 
 rm $(find -s . -maxdepth 1 -iname '*.tif' | awk 'FNR == 5') $(find -s . -maxdepth 1 -iname '*.tif' | awk 'FNR == 4') $(find -s . -maxdepth 1 -iname '*.tif' | awk 'FNR == 3') $(find -s . -maxdepth 1 -iname '*.tif' | awk 'FNR == 2') $(find -s . -maxdepth 1 -iname '*.tif' | awk 'FNR == 1')
 fi
-
 done
 
 #check for audio
@@ -144,22 +163,30 @@ acodec=$(printf "%s\n" -c:v copy -c:a aac)
 fi
 
 #output to prores
+#check for tif folders
+if ! grep './' /tmp/HDRMOVaa
+then
 ffmpeg $wav -r $(exiftool $(ls *.{MOV,mov,mp4,MP4,mkv,MKV,avi,AVI} | grep -v 'HDR_' | head -1) | grep 'Video Frame Rate' | cut -d ":" -f2) -i %06d.tiff $acodec -vcodec prores -pix_fmt yuv422p10le ../HDR_$(cat /tmp/HDRMOVaa | head -1 | cut -d "." -f1).mov
+#remove tiff files and HDR mov when done
+rm -r ../$(cat /tmp/HDRMOVaa | head -1 | cut -d "." -f1)
+else
+ffmpeg $wav -r $(cat fps) -i "$(cat /tmp/HDRMOVaa | head -1 | cut -d '/' -f2 | cut -d "." -f1)"_%06d.tiff $acodec -vcodec prores -pix_fmt yuv422p10le ../HDR_$(cat /tmp/HDRMOVaa | head -1 | cut -d '/' -f2 | cut -d "." -f1).mov
+#remove tiff files when done
+rm -r ../$(cat /tmp/HDRMOVaa | head -1 | cut -d '/' -f2 | cut -d "." -f1)
+fi
+#let´s go back 
+cd -
 
 if ls /tmp/KILLMOV 
 then 
 rm /tmp/HDRMOVaa
 fi
 
-mkdir -p ../HDR_ORIGINALS
-mv $(cat /tmp/HDRMOVaa | head -1) ../HDR_ORIGINALS
-cd -
-rm -r "$tmp"
 echo "$(tail -n +2 /tmp/HDRMOVaa)" > /tmp/HDRMOVaa
 done
 rm /tmp/HDRMOVaa
 
-if ! grep 'MOV\|mov\|mp4\|MP4\|mkv\|MKV\|avi\|AVI' /tmp/HDRMOV*
+if ! grep 'MOV\|mov\|mp4\|MP4\|mkv\|MKV\|avi\|AVI\|./' /tmp/HDRMOV*
 then
 rm /tmp/progress_bar.command 
 fi
@@ -167,24 +194,37 @@ rm /tmp/HDR_script.command
 EOF
 fi
 
-if grep 'MOV\|mov\|mp4\|MP4\|mkv\|MKV\|avi\|AVI' /tmp/HDRMOVab
+
+if grep 'MOV\|mov\|mp4\|MP4\|mkv\|MKV\|avi\|AVI\|./' /tmp/HDRMOVab
 then
 cat <<'EOF' > /tmp/HDR_script1.command
 #!/bin/bash
 cd "$(cat /tmp/Data.txt)"
 
-while grep 'MOV\|mov\|mp4\|MP4\|mkv\|MKV\|avi\|AVI' /tmp/HDRMOVab; do
-#build a temp folder
+while grep 'MOV\|mov\|mp4\|MP4\|mkv\|MKV\|avi\|AVI\|./' /tmp/HDRMOVab; do
+#build a temp folder only if it´s not a folder
+if ! grep './' /tmp/HDRMOVab
+then
 mkdir -p $(cat /tmp/HDRMOVab | head -1 | cut -d "." -f1)
-tmp="$(cat /tmp/HDRMOVab | head -1 | cut -d "." -f1)"
 mv $(cat /tmp/HDRMOVab | head -1) $(cat /tmp/HDRMOVab | head -1 | cut -d "." -f1)
-cd "$tmp"
-
+cd "$(cat /tmp/HDRMOVab | head -1 | cut -d "." -f1)"
+#spit out tif files
 ffmpeg -i $(cat /tmp/HDRMOVab | head -1) -pix_fmt rgb24 %06d.tif
+else
+#seems we have tif folders
+cd "$(cat /tmp/HDRMOVab | head -1 | cut -d '/' -f2)"
+fi
 
 #crop and rescale is needed is needed after aligning. Will take place in #output cropped and aligned images section
+#check for tif folders
+if ! grep './' /tmp/HDRMOVab
+then
 cr_W=$(echo $(exiftool $(cat /tmp/HDRMOVab | head -1) | awk '/Image Size/ { print $4,$5; exit }' | cut -d ":" -f2 | cut -d "x" -f1 ))
 cr_H=$(echo $(exiftool $(cat /tmp/HDRMOVab | head -1) | awk '/Image Size/ { print $4,$5; exit }' | cut -d ":" -f2 | cut -d "x" -f2 ))
+else
+cr_W=$(echo $(exiftool $(echo *_000000.tif) | awk '/Image Size/ { print $4,$5; exit }' | cut -d ":" -f2 | cut -d "x" -f1 ))
+cr_H=$(echo $(exiftool $(echo *_000000.tif) | awk '/Image Size/ { print $4,$5; exit }' | cut -d ":" -f2 | cut -d "x" -f2 ))
+fi
 cr_Ws=$(echo $cr_W*0.98 | bc -l | cut -d "." -f1)
 cr_Hs=$(echo $cr_H*0.98 | bc -l | cut -d "." -f1)
 crp_fix=$(echo crop=$cr_Ws:$cr_Hs,scale=$cr_W:$cr_H)
@@ -275,22 +315,30 @@ acodec=$(printf "%s\n" -c:v copy -c:a aac)
 fi
 
 #output to prores
+#check for tif folders
+if ! grep './' /tmp/HDRMOVab
+then
 ffmpeg $wav -r $(exiftool $(ls *.{MOV,mov,mp4,MP4,mkv,MKV,avi,AVI} | grep -v 'HDR_' | head -1) | grep 'Video Frame Rate' | cut -d ":" -f2) -i %06d.tiff $acodec -vcodec prores -pix_fmt yuv422p10le ../HDR_$(cat /tmp/HDRMOVab | head -1 | cut -d "." -f1).mov
+#remove tiff files and HDR mov when done
+rm -r ../$(cat /tmp/HDRMOVab | head -1 | cut -d "." -f1)
+else
+ffmpeg $wav -r $(cat fps) -i "$(cat /tmp/HDRMOVab | head -1 | cut -d '/' -f2 | cut -d "." -f1)"_%06d.tiff $acodec -vcodec prores -pix_fmt yuv422p10le ../HDR_$(cat /tmp/HDRMOVab | head -1 | cut -d '/' -f2 | cut -d "." -f1).mov
+#remove tiff files when done
+rm -r ../$(cat /tmp/HDRMOVab | head -1 | cut -d '/' -f2 | cut -d "." -f1)
+fi
+#let´s go back 
+cd -
 
 if ls /tmp/KILLMOV 
 then 
 rm /tmp/HDRMOVab
 fi
 
-mkdir -p ../HDR_ORIGINALS
-mv $(cat /tmp/HDRMOVab | head -1) ../HDR_ORIGINALS
-cd -
-rm -r "$tmp"
 echo "$(tail -n +2 /tmp/HDRMOVab)" > /tmp/HDRMOVab
 done
 rm /tmp/HDRMOVab
 
-if ! grep 'MOV\|mov\|mp4\|MP4\|mkv\|MKV\|avi\|AVI' /tmp/HDRMOV*
+if ! grep 'MOV\|mov\|mp4\|MP4\|mkv\|MKV\|avi\|AVI\|./' /tmp/HDRMOV*
 then
 rm /tmp/progress_bar.command 
 fi
@@ -298,24 +346,39 @@ rm /tmp/HDR_script1.command
 EOF
 fi
 
-if grep 'MOV\|mov\|mp4\|MP4\|mkv\|MKV\|avi\|AVI' /tmp/HDRMOVac
+
+
+
+
+if grep 'MOV\|mov\|mp4\|MP4\|mkv\|MKV\|avi\|AVI\|./' /tmp/HDRMOVac
 then
-cat <<'EOF' > /tmp/HDR_script2.command
 #!/bin/bash
 cd "$(cat /tmp/Data.txt)"
 
-while grep 'MOV\|mov\|mp4\|MP4\|mkv\|MKV\|avi\|AVI' /tmp/HDRMOVac; do
-#build a temp folder
+while grep 'MOV\|mov\|mp4\|MP4\|mkv\|MKV\|avi\|AVI\|./' /tmp/HDRMOVac; do
+#build a temp folder only if it´s not a folder
+if ! grep './' /tmp/HDRMOVac
+then
 mkdir -p $(cat /tmp/HDRMOVac | head -1 | cut -d "." -f1)
-tmp="$(cat /tmp/HDRMOVac | head -1 | cut -d "." -f1)"
 mv $(cat /tmp/HDRMOVac | head -1) $(cat /tmp/HDRMOVac | head -1 | cut -d "." -f1)
-cd "$tmp"
-
+cd "$(cat /tmp/HDRMOVac | head -1 | cut -d "." -f1)"
+#spit out tif files
 ffmpeg -i $(cat /tmp/HDRMOVac | head -1) -pix_fmt rgb24 %06d.tif
+else
+#seems we have tif folders
+cd "$(cat /tmp/HDRMOVac | head -1 | cut -d '/' -f2)"
+fi
 
 #crop and rescale is needed is needed after aligning. Will take place in #output cropped and aligned images section
+#check for tif folders
+if ! grep './' /tmp/HDRMOVac
+then
 cr_W=$(echo $(exiftool $(cat /tmp/HDRMOVac | head -1) | awk '/Image Size/ { print $4,$5; exit }' | cut -d ":" -f2 | cut -d "x" -f1 ))
 cr_H=$(echo $(exiftool $(cat /tmp/HDRMOVac | head -1) | awk '/Image Size/ { print $4,$5; exit }' | cut -d ":" -f2 | cut -d "x" -f2 ))
+else
+cr_W=$(echo $(exiftool $(echo *_000000.tif) | awk '/Image Size/ { print $4,$5; exit }' | cut -d ":" -f2 | cut -d "x" -f1 ))
+cr_H=$(echo $(exiftool $(echo *_000000.tif) | awk '/Image Size/ { print $4,$5; exit }' | cut -d ":" -f2 | cut -d "x" -f2 ))
+fi
 cr_Ws=$(echo $cr_W*0.98 | bc -l | cut -d "." -f1)
 cr_Hs=$(echo $cr_H*0.98 | bc -l | cut -d "." -f1)
 crp_fix=$(echo crop=$cr_Ws:$cr_Hs,scale=$cr_W:$cr_H)
@@ -406,22 +469,30 @@ acodec=$(printf "%s\n" -c:v copy -c:a aac)
 fi
 
 #output to prores
+#check for tif folders
+if ! grep './' /tmp/HDRMOVac
+then
 ffmpeg $wav -r $(exiftool $(ls *.{MOV,mov,mp4,MP4,mkv,MKV,avi,AVI} | grep -v 'HDR_' | head -1) | grep 'Video Frame Rate' | cut -d ":" -f2) -i %06d.tiff $acodec -vcodec prores -pix_fmt yuv422p10le ../HDR_$(cat /tmp/HDRMOVac | head -1 | cut -d "." -f1).mov
+#remove tiff files and HDR mov when done
+rm -r ../$(cat /tmp/HDRMOVac | head -1 | cut -d "." -f1)
+else
+ffmpeg $wav -r $(cat fps) -i "$(cat /tmp/HDRMOVac | head -1 | cut -d '/' -f2 | cut -d "." -f1)"_%06d.tiff $acodec -vcodec prores -pix_fmt yuv422p10le ../HDR_$(cat /tmp/HDRMOVac | head -1 | cut -d '/' -f2 | cut -d "." -f1).mov
+#remove tiff files when done
+rm -r ../$(cat /tmp/HDRMOVac | head -1 | cut -d '/' -f2 | cut -d "." -f1)
+fi
+#let´s go back 
+cd -
 
 if ls /tmp/KILLMOV 
 then 
 rm /tmp/HDRMOVac
 fi
 
-mkdir -p ../HDR_ORIGINALS
-mv $(cat /tmp/HDRMOVac | head -1) ../HDR_ORIGINALS
-cd -
-rm -r "$tmp"
 echo "$(tail -n +2 /tmp/HDRMOVac)" > /tmp/HDRMOVac
 done
 rm /tmp/HDRMOVac
 
-if ! grep 'MOV\|mov\|mp4\|MP4\|mkv\|MKV\|avi\|AVI' /tmp/HDRMOV*
+if ! grep 'MOV\|mov\|mp4\|MP4\|mkv\|MKV\|avi\|AVI\|./' /tmp/HDRMOV*
 then
 rm /tmp/progress_bar.command 
 fi
@@ -429,24 +500,36 @@ rm /tmp/HDR_script2.command
 EOF
 fi
 
-if grep 'MOV\|mov\|mp4\|MP4\|mkv\|MKV\|avi\|AVI' /tmp/HDRMOVad
+if grep 'MOV\|mov\|mp4\|MP4\|mkv\|MKV\|avi\|AVI\|./' /tmp/HDRMOVad
 then
 cat <<'EOF' > /tmp/HDR_script3.command
 #!/bin/bash
 cd "$(cat /tmp/Data.txt)"
 
-while grep 'MOV\|mov\|mp4\|MP4\|mkv\|MKV\|avi\|AVI' /tmp/HDRMOVad; do
-#build a temp folder
+while grep 'MOV\|mov\|mp4\|MP4\|mkv\|MKV\|avi\|AVI\|./' /tmp/HDRMOVad; do
+#build a temp folder only if it´s not a folder
+if ! grep './' /tmp/HDRMOVad
+then
 mkdir -p $(cat /tmp/HDRMOVad | head -1 | cut -d "." -f1)
-tmp="$(cat /tmp/HDRMOVad | head -1 | cut -d "." -f1)"
 mv $(cat /tmp/HDRMOVad | head -1) $(cat /tmp/HDRMOVad | head -1 | cut -d "." -f1)
-cd "$tmp"
-
+cd "$(cat /tmp/HDRMOVad | head -1 | cut -d "." -f1)"
+#spit out tif files
 ffmpeg -i $(cat /tmp/HDRMOVad | head -1) -pix_fmt rgb24 %06d.tif
+else
+#seems we have tif folders
+cd "$(cat /tmp/HDRMOVad | head -1 | cut -d '/' -f2)"
+fi
 
 #crop and rescale is needed is needed after aligning. Will take place in #output cropped and aligned images section
+#check for tif folders
+if ! grep './' /tmp/HDRMOVad
+then
 cr_W=$(echo $(exiftool $(cat /tmp/HDRMOVad | head -1) | awk '/Image Size/ { print $4,$5; exit }' | cut -d ":" -f2 | cut -d "x" -f1 ))
 cr_H=$(echo $(exiftool $(cat /tmp/HDRMOVad | head -1) | awk '/Image Size/ { print $4,$5; exit }' | cut -d ":" -f2 | cut -d "x" -f2 ))
+else
+cr_W=$(echo $(exiftool $(echo *_000000.tif) | awk '/Image Size/ { print $4,$5; exit }' | cut -d ":" -f2 | cut -d "x" -f1 ))
+cr_H=$(echo $(exiftool $(echo *_000000.tif) | awk '/Image Size/ { print $4,$5; exit }' | cut -d ":" -f2 | cut -d "x" -f2 ))
+fi
 cr_Ws=$(echo $cr_W*0.98 | bc -l | cut -d "." -f1)
 cr_Hs=$(echo $cr_H*0.98 | bc -l | cut -d "." -f1)
 crp_fix=$(echo crop=$cr_Ws:$cr_Hs,scale=$cr_W:$cr_H)
@@ -537,22 +620,30 @@ acodec=$(printf "%s\n" -c:v copy -c:a aac)
 fi
 
 #output to prores
+#check for tif folders
+if ! grep './' /tmp/HDRMOVad
+then
 ffmpeg $wav -r $(exiftool $(ls *.{MOV,mov,mp4,MP4,mkv,MKV,avi,AVI} | grep -v 'HDR_' | head -1) | grep 'Video Frame Rate' | cut -d ":" -f2) -i %06d.tiff $acodec -vcodec prores -pix_fmt yuv422p10le ../HDR_$(cat /tmp/HDRMOVad | head -1 | cut -d "." -f1).mov
+#remove tiff files and HDR mov when done
+rm -r ../$(cat /tmp/HDRMOVad | head -1 | cut -d "." -f1)
+else
+ffmpeg $wav -r $(cat fps) -i "$(cat /tmp/HDRMOVad | head -1 | cut -d '/' -f2 | cut -d "." -f1)"_%06d.tiff $acodec -vcodec prores -pix_fmt yuv422p10le ../HDR_$(cat /tmp/HDRMOVad | head -1 | cut -d '/' -f2 | cut -d "." -f1).mov
+#remove tiff files when done
+rm -r ../$(cat /tmp/HDRMOVad | head -1 | cut -d '/' -f2 | cut -d "." -f1)
+fi
+#let´s go back 
+cd -
 
 if ls /tmp/KILLMOV 
 then 
 rm /tmp/HDRMOVad
 fi
 
-mkdir -p ../HDR_ORIGINALS
-mv $(cat /tmp/HDRMOVad | head -1) ../HDR_ORIGINALS
-cd -
-rm -r "$tmp"
 echo "$(tail -n +2 /tmp/HDRMOVad)" > /tmp/HDRMOVad
 done
 rm /tmp/HDRMOVad
 
-if ! grep 'MOV\|mov\|mp4\|MP4\|mkv\|MKV\|avi\|AVI' /tmp/HDRMOV*
+if ! grep 'MOV\|mov\|mp4\|MP4\|mkv\|MKV\|avi\|AVI\|./' /tmp/HDRMOV*
 then
 rm /tmp/progress_bar.command 
 fi
@@ -788,7 +879,7 @@ EOF
 #open fps command and progress_bar.command
 chmod u=rwx /tmp/fps.command
 chmod u=rwx /tmp/progress_bar.command
-chmod u=rwx $(cat Data2.txt)/HDR_MOV.command
+chmod u=rwx "$(cat /tmp/Data2.txt | tr -d '"' )"/HDR_MOV.command
 sleep 0.2 && open /tmp/fps.command &
 
 #kill ongoing command
