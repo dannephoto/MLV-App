@@ -161,6 +161,12 @@ ffmpeg -i $(ls *.{MOV,mov,mp4,MP4,mkv,MKV,avi,AVI} | grep -v 'HDR_' | head -1) -
 wav=$(printf "%s\n" -i $(ls *.{MOV,mov,mp4,MP4,mkv,MKV,avi,AVI} | grep -v 'HDR_' | head -1 | cut -d "." -f1).wav)
 acodec=$(printf "%s\n" -c:v copy -c:a aac)
 fi
+#if running tif folders you probably have audio already
+if ls *.wav
+then
+wav=$(printf "%s\n" -i $(ls *.{MOV,mov,mp4,MP4,mkv,MKV,avi,AVI} | grep -v 'HDR_' | head -1 | cut -d "." -f1).wav)
+acodec=$(printf "%s\n" -c:v copy -c:a aac)
+fi
 
 #output to prores
 #check for tif folders
@@ -186,10 +192,7 @@ echo "$(tail -n +2 /tmp/HDRMOVaa)" > /tmp/HDRMOVaa
 done
 rm /tmp/HDRMOVaa
 
-if ! grep 'MOV\|mov\|mp4\|MP4\|mkv\|MKV\|avi\|AVI\|./' /tmp/HDRMOV*
-then
-rm /tmp/progress_bar.command 
-fi
+
 rm /tmp/HDR_script.command
 EOF
 fi
@@ -313,6 +316,12 @@ ffmpeg -i $(ls *.{MOV,mov,mp4,MP4,mkv,MKV,avi,AVI} | grep -v 'HDR_' | head -1) -
 wav=$(printf "%s\n" -i $(ls *.{MOV,mov,mp4,MP4,mkv,MKV,avi,AVI} | grep -v 'HDR_' | head -1 | cut -d "." -f1).wav)
 acodec=$(printf "%s\n" -c:v copy -c:a aac)
 fi
+#if running tif folders you probably have audio already
+if ls *.wav
+then
+wav=$(printf "%s\n" -i $(ls *.{MOV,mov,mp4,MP4,mkv,MKV,avi,AVI} | grep -v 'HDR_' | head -1 | cut -d "." -f1).wav)
+acodec=$(printf "%s\n" -c:v copy -c:a aac)
+fi
 
 #output to prores
 #check for tif folders
@@ -328,30 +337,22 @@ rm -r ../$(cat /tmp/HDRMOVab | head -1 | cut -d '/' -f2 | cut -d "." -f1)
 fi
 #let´s go back 
 cd -
-
 if ls /tmp/KILLMOV 
 then 
 rm /tmp/HDRMOVab
 fi
-
 echo "$(tail -n +2 /tmp/HDRMOVab)" > /tmp/HDRMOVab
 done
 rm /tmp/HDRMOVab
-
-if ! grep 'MOV\|mov\|mp4\|MP4\|mkv\|MKV\|avi\|AVI\|./' /tmp/HDRMOV*
-then
-rm /tmp/progress_bar.command 
-fi
 rm /tmp/HDR_script1.command
 EOF
 fi
 
 
 
-
-
 if grep 'MOV\|mov\|mp4\|MP4\|mkv\|MKV\|avi\|AVI\|./' /tmp/HDRMOVac
 then
+cat <<'EOF' > /tmp/HDR_script2.command
 #!/bin/bash
 cd "$(cat /tmp/Data.txt)"
 
@@ -467,6 +468,12 @@ ffmpeg -i $(ls *.{MOV,mov,mp4,MP4,mkv,MKV,avi,AVI} | grep -v 'HDR_' | head -1) -
 wav=$(printf "%s\n" -i $(ls *.{MOV,mov,mp4,MP4,mkv,MKV,avi,AVI} | grep -v 'HDR_' | head -1 | cut -d "." -f1).wav)
 acodec=$(printf "%s\n" -c:v copy -c:a aac)
 fi
+#if running tif folders you probably have audio already
+if ls *.wav
+then
+wav=$(printf "%s\n" -i $(ls *.{MOV,mov,mp4,MP4,mkv,MKV,avi,AVI} | grep -v 'HDR_' | head -1 | cut -d "." -f1).wav)
+acodec=$(printf "%s\n" -c:v copy -c:a aac)
+fi
 
 #output to prores
 #check for tif folders
@@ -487,15 +494,9 @@ if ls /tmp/KILLMOV
 then 
 rm /tmp/HDRMOVac
 fi
-
 echo "$(tail -n +2 /tmp/HDRMOVac)" > /tmp/HDRMOVac
 done
 rm /tmp/HDRMOVac
-
-if ! grep 'MOV\|mov\|mp4\|MP4\|mkv\|MKV\|avi\|AVI\|./' /tmp/HDRMOV*
-then
-rm /tmp/progress_bar.command 
-fi
 rm /tmp/HDR_script2.command
 EOF
 fi
@@ -618,6 +619,12 @@ ffmpeg -i $(ls *.{MOV,mov,mp4,MP4,mkv,MKV,avi,AVI} | grep -v 'HDR_' | head -1) -
 wav=$(printf "%s\n" -i $(ls *.{MOV,mov,mp4,MP4,mkv,MKV,avi,AVI} | grep -v 'HDR_' | head -1 | cut -d "." -f1).wav)
 acodec=$(printf "%s\n" -c:v copy -c:a aac)
 fi
+#if running tif folders you probably have audio already
+if ls *.wav
+then
+wav=$(printf "%s\n" -i $(ls *.{MOV,mov,mp4,MP4,mkv,MKV,avi,AVI} | grep -v 'HDR_' | head -1 | cut -d "." -f1).wav)
+acodec=$(printf "%s\n" -c:v copy -c:a aac)
+fi
 
 #output to prores
 #check for tif folders
@@ -643,10 +650,7 @@ echo "$(tail -n +2 /tmp/HDRMOVad)" > /tmp/HDRMOVad
 done
 rm /tmp/HDRMOVad
 
-if ! grep 'MOV\|mov\|mp4\|MP4\|mkv\|MKV\|avi\|AVI\|./' /tmp/HDRMOV*
-then
-rm /tmp/progress_bar.command 
-fi
+
 rm /tmp/HDR_script3.command
 EOF
 fi
