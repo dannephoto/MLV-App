@@ -161,7 +161,12 @@ ffmpeg -i $(ls *.{MOV,mov,mp4,MP4,mkv,MKV,avi,AVI} | grep -v 'HDR_' | head -1) -
 wav=$(printf "%s\n" -i $(ls *.{MOV,mov,mp4,MP4,mkv,MKV,avi,AVI} | grep -v 'HDR_' | head -1 | cut -d "." -f1).wav)
 acodec=$(printf "%s\n" -c:v copy -c:a aac)
 fi
-
+//tif folders
+if ls *.wav
+then
+wav=$(printf "%s\n" -i $(ls *.wav | awk 'FNR == 1'))
+acodec=$(printf "%s\n" -c:v copy -c:a aac)
+fi
 
 #output to prores
 #check for tif folders
@@ -177,17 +182,13 @@ rm -r ../$(cat /tmp/HDRMOVaa | head -1 | cut -d '/' -f2 | cut -d "." -f1)
 fi
 #let´s go back 
 cd -
-
 if ls /tmp/KILLMOV 
 then 
 rm /tmp/HDRMOVaa
 fi
-
 echo "$(tail -n +2 /tmp/HDRMOVaa)" > /tmp/HDRMOVaa
 done
 rm /tmp/HDRMOVaa
-
-
 rm /tmp/HDR_script.command
 EOF
 fi
@@ -311,7 +312,12 @@ ffmpeg -i $(ls *.{MOV,mov,mp4,MP4,mkv,MKV,avi,AVI} | grep -v 'HDR_' | head -1) -
 wav=$(printf "%s\n" -i $(ls *.{MOV,mov,mp4,MP4,mkv,MKV,avi,AVI} | grep -v 'HDR_' | head -1 | cut -d "." -f1).wav)
 acodec=$(printf "%s\n" -c:v copy -c:a aac)
 fi
-
+//tif folders
+if ls *.wav
+then
+wav=$(printf "%s\n" -i $(ls *.wav | awk 'FNR == 1'))
+acodec=$(printf "%s\n" -c:v copy -c:a aac)
+fi
 
 #output to prores
 #check for tif folders
@@ -337,7 +343,6 @@ rm /tmp/HDRMOVab
 rm /tmp/HDR_script1.command
 EOF
 fi
-
 
 
 if grep 'MOV\|mov\|mp4\|MP4\|mkv\|MKV\|avi\|AVI\|./' /tmp/HDRMOVac
@@ -458,7 +463,12 @@ ffmpeg -i $(ls *.{MOV,mov,mp4,MP4,mkv,MKV,avi,AVI} | grep -v 'HDR_' | head -1) -
 wav=$(printf "%s\n" -i $(ls *.{MOV,mov,mp4,MP4,mkv,MKV,avi,AVI} | grep -v 'HDR_' | head -1 | cut -d "." -f1).wav)
 acodec=$(printf "%s\n" -c:v copy -c:a aac)
 fi
-
+//tif folders
+if ls *.wav
+then
+wav=$(printf "%s\n" -i $(ls *.wav | awk 'FNR == 1'))
+acodec=$(printf "%s\n" -c:v copy -c:a aac)
+fi
 
 #output to prores
 #check for tif folders
@@ -474,7 +484,6 @@ rm -r ../$(cat /tmp/HDRMOVac | head -1 | cut -d '/' -f2 | cut -d "." -f1)
 fi
 #let´s go back 
 cd -
-
 if ls /tmp/KILLMOV 
 then 
 rm /tmp/HDRMOVac
@@ -604,7 +613,12 @@ ffmpeg -i $(ls *.{MOV,mov,mp4,MP4,mkv,MKV,avi,AVI} | grep -v 'HDR_' | head -1) -
 wav=$(printf "%s\n" -i $(ls *.{MOV,mov,mp4,MP4,mkv,MKV,avi,AVI} | grep -v 'HDR_' | head -1 | cut -d "." -f1).wav)
 acodec=$(printf "%s\n" -c:v copy -c:a aac)
 fi
-
+//tif folders
+if ls *.wav
+then
+wav=$(printf "%s\n" -i $(ls *.wav | awk 'FNR == 1'))
+acodec=$(printf "%s\n" -c:v copy -c:a aac)
+fi
 
 #output to prores
 #check for tif folders
@@ -620,17 +634,13 @@ rm -r ../$(cat /tmp/HDRMOVad | head -1 | cut -d '/' -f2 | cut -d "." -f1)
 fi
 #let´s go back 
 cd -
-
 if ls /tmp/KILLMOV 
 then 
 rm /tmp/HDRMOVad
 fi
-
 echo "$(tail -n +2 /tmp/HDRMOVad)" > /tmp/HDRMOVad
 done
 rm /tmp/HDRMOVad
-
-
 rm /tmp/HDR_script3.command
 EOF
 fi
