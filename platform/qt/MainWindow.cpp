@@ -82,6 +82,10 @@ MainWindow::MainWindow(int &argc, char **argv, QWidget *parent) :
     connect( m_pRenderThread, SIGNAL(frameReady()), this, SLOT(drawFrameReady()) );
     while( !m_pRenderThread->isRunning() ) {}
 
+    //Init scripting engine
+    m_pScripting = new Scripting( this );
+    m_pScripting->scanScripts();
+
     //Init the GUI
     initGui();
 
@@ -119,6 +123,11 @@ MainWindow::MainWindow(int &argc, char **argv, QWidget *parent) :
             m_inOpeningProcess = false;
             m_sessionFileName = fileName;
         }
+        else if( QFile(fileName).exists() && fileName.endsWith( ".command", Qt::CaseInsensitive ) )
+        {
+            if( m_pScripting->installScript( fileName ) )
+                QMessageBox::information( this, APPNAME, tr( "Installation of script %1 successful." ).arg( QFileInfo( fileName ).fileName() ) );
+        }
     }
 
     //Update check, if autocheck enabled, once a day
@@ -147,6 +156,7 @@ MainWindow::~MainWindow()
 
     //Save settings
     writeSettings();
+    delete m_pScripting;
     delete m_pReceiptClipboard;
     delete m_pAudioPlayback;
     delete m_pAudioWave;
@@ -285,6 +295,11 @@ bool MainWindow::event(QEvent *event)
             m_sessionFileName = fileName;
             m_inOpeningProcess = false;
         }
+        else if( QFile(fileName).exists() && fileName.endsWith( ".command", Qt::CaseInsensitive ) )
+        {
+            if( m_pScripting->installScript( fileName ) )
+                QMessageBox::information( this, APPNAME, tr( "Installation of script %1 successful." ).arg( QFileInfo( fileName ).fileName() ) );
+        }
         else return false;
     }
     return QMainWindow::event(event);
@@ -304,6 +319,13 @@ void MainWindow::dropEvent(QDropEvent *event)
     for( int i = 0; i < event->mimeData()->urls().count(); i++ )
     {
         QString fileName = event->mimeData()->urls().at(i).path();
+
+        if( QFile(fileName).exists() && fileName.endsWith( ".command", Qt::CaseInsensitive ) )
+        {
+            if( m_pScripting->installScript( fileName ) )
+                QMessageBox::information( this, APPNAME, tr( "Installation of script %1 successful." ).arg( QFileInfo( fileName ).fileName() ) );
+            return;
+        }
 
         //Exit if not an MLV file or aborted
         if( fileName == QString( "" ) || !fileName.endsWith( ".mlv", Qt::CaseInsensitive ) ) continue;
@@ -418,7 +440,11 @@ int MainWindow::openMlvForPreview(QString fileName)
 {
     int mlvErr = MLV_ERR_NONE;
     char mlvErrMsg[256] = { 0 };
+#ifdef Q_OS_UNIX
+    mlvObject_t * new_MlvObject = initMlvObjectWithClip( fileName.toUtf8().data(), MLV_OPEN_PREVIEW, &mlvErr, mlvErrMsg );
+#else
     mlvObject_t * new_MlvObject = initMlvObjectWithClip( fileName.toLatin1().data(), MLV_OPEN_PREVIEW, &mlvErr, mlvErrMsg );
+#endif
     if( mlvErr )
     {
         QMessageBox::critical( this, tr( "MLV Error" ), tr( "%1" ).arg( mlvErrMsg ), tr("Cancel") );
@@ -512,7 +538,11 @@ int MainWindow::openMlv( QString fileName )
 
     int mlvErr = MLV_ERR_NONE;
     char mlvErrMsg[256] = { 0 };
+#ifdef Q_OS_UNIX
+    mlvObject_t * new_MlvObject = initMlvObjectWithClip( fileName.toUtf8().data(), mlvOpenMode, &mlvErr, mlvErrMsg );
+#else
     mlvObject_t * new_MlvObject = initMlvObjectWithClip( fileName.toLatin1().data(), mlvOpenMode, &mlvErr, mlvErrMsg );
+#endif
     if( mlvErr )
     {
         QMessageBox::critical( this, tr( "MLV Error" ), tr( "%1" ).arg( mlvErrMsg ), tr("Cancel") );
@@ -1069,7 +1099,11 @@ void MainWindow::startExportPipe(QString fileName)
     ffmpegAudioCommand.clear();
     if( m_audioExportEnabled && doesMlvHaveAudio( m_pMlvObject ) )
     {
+#ifdef Q_OS_UNIX
+        writeMlvAudioToWaveCut( m_pMlvObject, wavFileName.toUtf8().data(), m_exportQueue.first()->cutIn(), m_exportQueue.first()->cutOut() );
+#else
         writeMlvAudioToWaveCut( m_pMlvObject, wavFileName.toLatin1().data(), m_exportQueue.first()->cutIn(), m_exportQueue.first()->cutOut() );
+#endif
         if( m_codecProfile == CODEC_H264 || m_codecProfile == CODEC_H265 ) ffmpegAudioCommand = QString( "-i \"%1\" -c:a aac " ).arg( wavFileName );
         else ffmpegAudioCommand = QString( "-i \"%1\" -c:a copy " ).arg( wavFileName );
     }
@@ -1177,24 +1211,8 @@ void MainWindow::startExportPipe(QString fileName)
     QString program = QString( "ffmpeg" );
 #else
     QString program = QCoreApplication::applicationDirPath();
-    //path to MacOS folder(applications. Before appending
-    QString filename2 = "/tmp/Data2.txt";
-    QFile file2(filename2);
-    file2.open(QIODevice::WriteOnly);
-    file2.write(program.toUtf8());
-    file2.close();
-    //back to append
     program.append( QString( "/ffmpeg\"" ) );
     program.prepend( QString( "\"" ) );
-
-    //path to output folder. Needed for bash script workflows
-    QString path = QFileInfo( m_exportQueue.first()->exportFileName() ).absolutePath(); 
-    QString filename = "/tmp/Data.txt";
-    QFile file1(filename);
-    file1.open(QIODevice::WriteOnly);
-    file1.write(path.toUtf8());
-    file1.close();
-    
 #endif
 
 #ifdef STDOUT_SILENT
@@ -1210,13 +1228,6 @@ void MainWindow::startExportPipe(QString fileName)
     QString resolution = QString( "%1x%2" ).arg( getMlvWidth( m_pMlvObject ) ).arg( getMlvHeight( m_pMlvObject ) );
     if( m_codecProfile == CODEC_TIFF )
     {
-
-	//working with HDR tif files. Bash script need to know about this. Send a file tmp which bash can look for
-        QString filename3 = "/tmp/tif_creation";
-        QFile file3(filename3);
-        file3.open(QIODevice::WriteOnly);
-        file3.close();
-
         //Creating a folder with the initial filename
         QString folderName = QFileInfo( fileName ).path();
         QString shortFileName = QFileInfo( fileName ).fileName();
@@ -1225,13 +1236,6 @@ void MainWindow::startExportPipe(QString fileName)
 
         QDir dir;
         dir.mkpath( folderName );
-
-        //we also need to know HDR fps from the actual MLV files since tif doesn´t reveal frames per second. 
-        QString fps = locale.toString( getFramerate() );
-        QFile file5(folderName + "/fps");
-        file5.open(QIODevice::WriteOnly);
-        file5.write(fps.toUtf8());
-        file5.close();
 
         //Now add the numbered filename
         output = folderName;
@@ -1252,6 +1256,8 @@ void MainWindow::startExportPipe(QString fileName)
         {
             QFile::copy( wavFileName, QString( "%1/%2.wav" ).arg( folderName ).arg( shortFileName.left( shortFileName.lastIndexOf( "." ) ) ) );
         }
+        //Setup for scripting
+        m_pScripting->setNextScriptInputTiff( getMlvFramerate( m_pMlvObject ), folderName );
     }
     else if( m_codecProfile == CODEC_AVIRAW )
     {
@@ -1426,7 +1432,7 @@ void MainWindow::startExportPipe(QString fileName)
     FILE *pPipe;
     //qDebug() << program;
 #ifdef Q_OS_UNIX
-    if( !( pPipe = popen( program.toLatin1().data(), "w" ) ) )
+    if( !( pPipe = popen( program.toUtf8().data(), "w" ) ) )
 #else
     if( !( pPipe = popen( program.toLatin1().data(), "wb" ) ) )
 #endif
@@ -1550,7 +1556,11 @@ void MainWindow::startExportCdng(QString fileName)
             .arg( getMlvTmMonth( m_pMlvObject ), 2, 10, QChar('0') )
             .arg( getMlvTmDay( m_pMlvObject ), 2, 10, QChar('0') );
         //qDebug() << wavFileName;
+#ifdef Q_OS_UNIX
+        writeMlvAudioToWaveCut( m_pMlvObject, wavFileName.toUtf8().data(), m_exportQueue.first()->cutIn(), m_exportQueue.first()->cutOut() );
+#else
         writeMlvAudioToWaveCut( m_pMlvObject, wavFileName.toLatin1().data(), m_exportQueue.first()->cutIn(), m_exportQueue.first()->cutOut() );
+#endif
     }
 
     //Set aspect ratio of the picture
@@ -1609,10 +1619,13 @@ void MainWindow::startExportCdng(QString fileName)
 
         QString filePathNr = pathName;
         filePathNr = filePathNr.append( "/" + dngName );
-        QByteArray dngFileName = filePathNr.toLatin1();
 
         //Save cDNG frame
-        if( saveDngFrame( m_pMlvObject, cinemaDng, frame, dngFileName.data() ) )
+#ifdef Q_OS_UNIX
+        if( saveDngFrame( m_pMlvObject, cinemaDng, frame, filePathNr.toUtf8().data() ) )
+#else
+        if( saveDngFrame( m_pMlvObject, cinemaDng, frame, filePathNr.toLatin1().data() ) )
+#endif
         {
             m_pStatusDialog->hide();
             qApp->processEvents();
@@ -1675,10 +1688,13 @@ void MainWindow::startExportMlv(QString fileName)
     fileName = QFileInfo( fileName ).fileName();
     //fileName = fileName.left( fileName.indexOf( '.' ) );
     pathName = pathName.append( "/%1" ).arg( fileName );
-    QByteArray MlvFileName = pathName.toLatin1();
 
     /* open .MLV file for writing */
-    FILE* mlvOut = fopen(MlvFileName.data(), "wb");
+#ifdef Q_OS_UNIX
+    FILE* mlvOut = fopen(pathName.toUtf8().data(), "wb");
+#else
+    FILE* mlvOut = fopen(pathName.toLatin1().data(), "wb");
+#endif
     if (!mlvOut)
     {
         return;
@@ -1783,7 +1799,7 @@ void MainWindow::startExportAVFoundation(QString fileName)
                                            AVF_COLOURSPACE_SRGB,
                                            getFramerate() );
 
-    beginWritingVideoFile(encoder, fileName.toLatin1().data());
+    beginWritingVideoFile(encoder, fileName.toUtf8().data());
 
     //Build buffer
     uint32_t frameSize = getMlvWidth( m_pMlvObject ) * getMlvHeight( m_pMlvObject ) * 3;
@@ -1824,7 +1840,7 @@ void MainWindow::startExportAVFoundation(QString fileName)
     if( m_audioExportEnabled && doesMlvHaveAudio( m_pMlvObject ) )
     {
         QString wavFileName = QString( "%1.wav" ).arg( fileName.left( fileName.lastIndexOf( "." ) ) );
-        writeMlvAudioToWaveCut( m_pMlvObject, wavFileName.toLatin1().data(), m_exportQueue.first()->cutIn(), m_exportQueue.first()->cutOut() );
+        writeMlvAudioToWaveCut( m_pMlvObject, wavFileName.toUtf8().data(), m_exportQueue.first()->cutIn(), m_exportQueue.first()->cutOut() );
 
         QString tempFileName = QString( "%1_temp.mov" ).arg( fileName.left( fileName.lastIndexOf( "." ) ) );
         QFile( fileName ).rename( tempFileName );
@@ -3318,7 +3334,7 @@ void MainWindow::on_actionAbout_triggered()
                                  .arg( pic )
                                  .arg( APPNAME )
                                  .arg( VERSION )
-                                 .arg( "by Ilia3101, bouncyball & masc." )
+                                 .arg( "by Ilia3101, bouncyball, Danne & masc." )
                                  .arg( "https://github.com/ilia3101/MLV-App" )
                                  .arg( "https://github.com/Jorgen-VikingGod" )
                                  .arg( "http://www.doublejdesign.co.uk/" )
@@ -3618,6 +3634,9 @@ void MainWindow::on_actionExport_triggered()
     setEnabled( false );
     m_pStatusDialog->setEnabled( true );
 
+    //Scripting class wants to know the export folder
+    m_pScripting->setExportDir( QFileInfo( m_exportQueue.first()->exportFileName() ).absolutePath() );
+
     //startExport
     exportHandler();
 }
@@ -3826,6 +3845,7 @@ void MainWindow::on_actionExportSettings_triggered()
     ui->actionPlay->setChecked( false );
 
     ExportSettingsDialog *pExportSettings = new ExportSettingsDialog( this,
+                                                                      m_pScripting,
                                                                       m_codecProfile,
                                                                       m_codecOption,
                                                                       m_exportDebayerMode,
@@ -4463,11 +4483,12 @@ void MainWindow::exportHandler( void )
         //Export is ready
         exportRunning = false;
 
-    //enabling HDR processing, no questions asked. Yet.
-    QProcess process;
-    process.startDetached("/bin/bash", QStringList()<< "HDR_MOV.command");
-
-        if( !m_exportAbortPressed ) QMessageBox::information( this, tr( "Export" ), tr( "HDR script running." ) );
+        if( !m_exportAbortPressed )
+        {
+            //Start export script when ready
+            m_pScripting->executePostExportScript();
+            QMessageBox::information( this, tr( "Export" ), tr( "Export is ready." ) );
+        }
         else QMessageBox::information( this, tr( "Export" ), tr( "Export aborted." ) );
 
         //Caching is in which state? Set it!
@@ -5480,7 +5501,11 @@ void MainWindow::on_lineEditDarkFrameFile_textChanged(const QString &arg1)
 {
     if( QFileInfo( arg1 ).exists() && arg1.endsWith( ".MLV", Qt::CaseInsensitive ) )
     {
+#ifdef Q_OS_UNIX
+        QByteArray darkFrameFileName = arg1.toUtf8();
+#else
         QByteArray darkFrameFileName = arg1.toLatin1();
+#endif
 
         char errorMessage[256] = { 0 };
         int ret = llrpValidateExtDarkFrame(m_pMlvObject, darkFrameFileName.data(), errorMessage);

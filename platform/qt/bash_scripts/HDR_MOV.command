@@ -22,6 +22,43 @@
 
 #!/bin/bash
 cd "$(cat /tmp/Data.txt)"
+rm HDRMOV_LOG.txt
+rm -r /tmp/HDRMOVlogs
+#log
+echo "$(date)" > HDRMOV_LOG.txt
+echo "##################HDR_MOV.command#####################" >> HDRMOV_LOG.txt
+echo "###Checking for paths###" >> HDRMOV_LOG.txt
+echo outputpath: "$(cat /tmp/Data.txt)" >> HDRMOV_LOG.txt
+echo applicationpath: "$(cat /tmp/Data2.txt)" >> HDRMOV_LOG.txt
+echo "" >> HDRMOV_LOG.txt
+echo "###Checking for dependencies###" >> HDRMOV_LOG.txt
+if [ -f "/usr/local/bin/brew" ]
+then
+echo "brew: /usr/local/bin/brew" >> HDRMOV_LOG.txt
+else
+echo "brew: MISSING!" >> HDRMOV_LOG.txt
+fi
+if [ -f "/Applications/Hugin/Hugin.app/Contents/MacOS/align_image_stack" ]
+then
+echo "align_image_stack: /Applications/Hugin/Hugin.app/Contents/MacOS/align_image_stack" >> HDRMOV_LOG.txt
+else
+echo "align_image_stack: MISSING!" >> HDRMOV_LOG.txt
+fi
+if [ -f "/usr/local/bin/exiftool" ]
+then
+echo "exiftool: /usr/local/bin/exiftool" >> HDRMOV_LOG.txt
+else
+echo "exiftool: MISSING!" >> HDRMOV_LOG.txt
+fi
+if [ -f "/usr/local/bin/ffmpeg" ]
+then
+echo "ffmpeg: /usr/local/bin/ffmpeg" >> HDRMOV_LOG.txt
+else
+echo "ffmpeg: MISSING!" >> HDRMOV_LOG.txt
+fi
+echo ""  >> HDRMOV_LOG.txt
+echo "take note that if you run the script for the first time
+dependencies will naturally be missing in this log file"  >> HDRMOV_LOG.txt
 
 rm /tmp/HDRMOV*
 rm /tmp/HDR_script*.command
@@ -50,6 +87,11 @@ cd "$(cat /tmp/Data.txt)"
 
 #progress_bar
 open /tmp/progress_bar.command &
+
+#log
+echo "" >> HDRMOV_LOG.txt
+echo "##################HDR_script.command#####################" >> HDRMOV_LOG.txt
+#run the log file
 
 while grep 'MOV\|mov\|mp4\|MP4\|mkv\|MKV\|avi\|AVI\|./' /tmp/HDRMOVaa; do
 #build a temp folder only if it´s not a folder
@@ -99,57 +141,31 @@ do
 #if killing process
 if ! ls /tmp/KILLMOV 
 then 
+#enfuse workflow. Needs crop to care for align processing. Roundtrip because of enfuse interpolation causing flicker otherwise
 #output cropped and aligned images
-ffmpeg -i %05d.tiff -pix_fmt rgb24 -vf tblend=all_mode=average,$crp_fix $(find -s . -maxdepth 1 -iname '*.tif' | awk 'FNR == 5' | cut -d "." -f2 | tr -d "/").tiff
-ffmpeg -i %04d.tiff -pix_fmt rgb24 -vf tblend=all_mode=average,$crp_fix $(find -s . -maxdepth 1 -iname '*.tif' | awk 'FNR == 4' | cut -d "." -f2 | tr -d "/").tiff
-ffmpeg -i %03d.tiff -pix_fmt rgb24 -vf tblend=all_mode=average,$crp_fix $(find -s . -maxdepth 1 -iname '*.tif' | awk 'FNR == 3' | cut -d "." -f2 | tr -d "/").tiff
-ffmpeg -i %02d.tiff -pix_fmt rgb24 -vf tblend=all_mode=average,$crp_fix $(find -s . -maxdepth 1 -iname '*.tif' | awk 'FNR == 2' | cut -d "." -f2 | tr -d "/").tiff
-ffmpeg -i %01d.tiff -pix_fmt rgb24 -vf tblend=all_mode=average,$crp_fix $(find -s . -maxdepth 1 -iname '*.tif' | awk 'FNR == 1' | cut -d "." -f2 | tr -d "/").tiff
+ffmpeg -i 00001.tiff -pix_fmt rgb24 -vf $crp_fix 00001b.tiff &
+ffmpeg -i 00002.tiff -pix_fmt rgb24 -vf $crp_fix 00002b.tiff &
+ffmpeg -i 0001.tiff -pix_fmt rgb24 -vf $crp_fix 0001b.tiff &
+ffmpeg -i 0002.tiff -pix_fmt rgb24 -vf $crp_fix 0002b.tiff &
+ffmpeg -i 001.tiff -pix_fmt rgb24 -vf $crp_fix 001b.tiff &
+ffmpeg -i 002.tiff -pix_fmt rgb24 -vf $crp_fix 002b.tiff &
+ffmpeg -i 01.tiff -pix_fmt rgb24 -vf $crp_fix 01b.tiff &
+ffmpeg -i 02.tiff -pix_fmt rgb24 -vf $crp_fix 02b.tiff &
+ffmpeg -i 1.tiff -pix_fmt rgb24 -vf $crp_fix 1b.tiff &
+ffmpeg -i 2.tiff -pix_fmt rgb24 -vf $crp_fix 2b.tiff &
+#wait for jobs to end
+    wait < <(jobs -p)
 
-#safeguards
-   if ! [ -f 1.tiff ] || ! [ -f 2.tiff ]
-   then
-   sleep 2
-rm $(find -s . -maxdepth 1 -iname '*.tif' | awk 'FNR == 1' | cut -d "." -f2 | tr -d "/").tiff
-/Applications/Hugin/Hugin.app/Contents/MacOS/align_image_stack -a aligned.tif $(find -s . -maxdepth 1 -iname '*.tif' | awk 'FNR == 1') $(find -s . -maxdepth 1 -iname '*.tif' | awk 'FNR == 2') && mv aligned.tif0000.tif 1.tiff && mv aligned.tif0001.tif 2.tiff
-ffmpeg -i %01d.tiff -pix_fmt rgb24 -vf tblend=all_mode=average,$crp_fix $(find -s . -maxdepth 1 -iname '*.tif' | awk 'FNR == 1' | cut -d "." -f2 | tr -d "/").tiff
-   fi
-
-   if ! [ -f 01.tiff ] || ! [ -f 02.tiff ]
-   then
-   sleep 2
-rm $(find -s . -maxdepth 1 -iname '*.tif' | awk 'FNR == 2' | cut -d "." -f2 | tr -d "/").tiff
-/Applications/Hugin/Hugin.app/Contents/MacOS/align_image_stack -a aligned2.tif $(find -s . -maxdepth 1 -iname '*.tif' | awk 'FNR == 2') $(find -s . -maxdepth 1 -iname '*.tif' | awk 'FNR == 3') && mv aligned2.tif0000.tif 01.tiff && mv aligned2.tif0001.tif 02.tiff
-ffmpeg -i %02d.tiff -pix_fmt rgb24 -vf tblend=all_mode=average,$crp_fix $(find -s . -maxdepth 1 -iname '*.tif' | awk 'FNR == 2' | cut -d "." -f2 | tr -d "/").tiff
-   fi
-
-   if ! [ -f 001.tiff ] || ! [ -f 002.tiff ]
-   then
-   sleep 2
-rm $(find -s . -maxdepth 1 -iname '*.tif' | awk 'FNR == 3' | cut -d "." -f2 | tr -d "/").tiff
-/Applications/Hugin/Hugin.app/Contents/MacOS/align_image_stack -a aligned3.tif $(find -s . -maxdepth 1 -iname '*.tif' | awk 'FNR == 3') $(find -s . -maxdepth 1 -iname '*.tif' | awk 'FNR == 4') && mv aligned3.tif0000.tif 001.tiff && mv aligned3.tif0001.tif 002.tiff
-ffmpeg -i %03d.tiff -pix_fmt rgb24 -vf tblend=all_mode=average,$crp_fix $(find -s . -maxdepth 1 -iname '*.tif' | awk 'FNR == 3' | cut -d "." -f2 | tr -d "/").tiff
-   fi
-
-   if ! [ -f 0001.tiff ] || ! [ -f 0002.tiff ]
-   then
-   sleep 2
-rm $(find -s . -maxdepth 1 -iname '*.tif' | awk 'FNR == 4' | cut -d "." -f2 | tr -d "/").tiff
-/Applications/Hugin/Hugin.app/Contents/MacOS/align_image_stack -a aligned4.tif $(find -s . -maxdepth 1 -iname '*.tif' | awk 'FNR == 4') $(find -s . -maxdepth 1 -iname '*.tif' | awk 'FNR == 5') && mv aligned4.tif0000.tif 0001.tiff && mv aligned4.tif0001.tif 0002.tiff
-ffmpeg -i %04d.tiff -pix_fmt rgb24 -vf tblend=all_mode=average,$crp_fix $(find -s . -maxdepth 1 -iname '*.tif' | awk 'FNR == 4' | cut -d "." -f2 | tr -d "/").tiff
-   fi
-
-   if ! [ -f 00001.tiff ] || ! [ -f 00002.tiff ]
-   then
-   sleep 2
-rm $(find -s . -maxdepth 1 -iname '*.tif' | awk 'FNR == 5' | cut -d "." -f2 | tr -d "/").tiff
-/Applications/Hugin/Hugin.app/Contents/MacOS/align_image_stack -a aligned5.tif $(find -s . -maxdepth 1 -iname '*.tif' | awk 'FNR == 5') $(find -s . -maxdepth 1 -iname '*.tif' | awk 'FNR == 6') && mv aligned5.tif0000.tif 00001.tiff && mv aligned5.tif0001.tif 00002.tiff
-ffmpeg -i %05d.tiff -pix_fmt rgb24 -vf tblend=all_mode=average,$crp_fix $(find -s . -maxdepth 1 -iname '*.tif' | awk 'FNR == 5' | cut -d "." -f2 | tr -d "/").tiff
-   fi
-
+/Applications/Hugin/tools_mac/enfuse 1b.tiff 2b.tiff -o $(find -s . -maxdepth 1 -iname '*.tif' | awk 'FNR == 1' | cut -d "." -f2 | tr -d "/").tiff &
+/Applications/Hugin/tools_mac/enfuse 01b.tiff 02b.tiff -o $(find -s . -maxdepth 1 -iname '*.tif' | awk 'FNR == 2' | cut -d "." -f2 | tr -d "/").tiff &
+/Applications/Hugin/tools_mac/enfuse 001b.tiff 002b.tiff -o $(find -s . -maxdepth 1 -iname '*.tif' | awk 'FNR == 3' | cut -d "." -f2 | tr -d "/").tiff &
+/Applications/Hugin/tools_mac/enfuse 0001b.tiff 0002b.tiff -o $(find -s . -maxdepth 1 -iname '*.tif' | awk 'FNR == 4' | cut -d "." -f2 | tr -d "/").tiff &
+/Applications/Hugin/tools_mac/enfuse 00001b.tiff 00002b.tiff -o $(find -s . -maxdepth 1 -iname '*.tif' | awk 'FNR == 5' | cut -d "." -f2 | tr -d "/").tiff & 
+#wait for jobs to end
+    wait < <(jobs -p)
 #remove unwanted files
 rm 00001.tiff 00002.tiff 0001.tiff 0002.tiff 001.tiff 002.tiff 01.tiff 02.tiff 1.tiff 2.tiff
-
+rm 00001b.tiff 00002b.tiff 0001b.tiff 0002b.tiff 001b.tiff 002b.tiff 01b.tiff 02b.tiff 1b.tiff 2b.tiff
 rm $(find -s . -maxdepth 1 -iname '*.tif' | awk 'FNR == 5') $(find -s . -maxdepth 1 -iname '*.tif' | awk 'FNR == 4') $(find -s . -maxdepth 1 -iname '*.tif' | awk 'FNR == 3') $(find -s . -maxdepth 1 -iname '*.tif' | awk 'FNR == 2') $(find -s . -maxdepth 1 -iname '*.tif' | awk 'FNR == 1')
 fi
 done
@@ -200,6 +216,12 @@ cat <<'EOF' > /tmp/HDR_script1.command
 #!/bin/bash
 cd "$(cat /tmp/Data.txt)"
 
+#log
+#extra logs sent to /tmp/logs/folder
+mkdir -p /tmp/HDRMOVlogs/
+echo "##################HDR_script1.command#####################" > /tmp/HDRMOVlogs/HDR_script1.txt
+#run the log file
+
 while grep 'MOV\|mov\|mp4\|MP4\|mkv\|MKV\|avi\|AVI\|./' /tmp/HDRMOVab; do
 #build a temp folder only if it´s not a folder
 if ! grep './' /tmp/HDRMOVab
@@ -232,7 +254,6 @@ crp_fix=$(echo crop=$cr_Ws:$cr_Hs,scale=$cr_W:$cr_H)
 
 while grep -E "tif" <<< $(find . -maxdepth 1 -iname '*.tif')
 do
-
 #align images and rename
 /Applications/Hugin/Hugin.app/Contents/MacOS/align_image_stack -a aligned.tif $(find -s . -maxdepth 1 -iname '*.tif' | awk 'FNR == 1') $(find -s . -maxdepth 1 -iname '*.tif' | awk 'FNR == 2') && mv aligned.tif0000.tif 1.tiff && mv aligned.tif0001.tif 2.tiff & pid1=$!
 
@@ -250,57 +271,31 @@ do
 #if killing process
 if ! ls /tmp/KILLMOV 
 then 
+#enfuse workflow. Needs crop to care for align processing. Roundtrip because of enfuse interpolation causing flicker otherwise
 #output cropped and aligned images
-ffmpeg -i %05d.tiff -pix_fmt rgb24 -vf tblend=all_mode=average,$crp_fix $(find -s . -maxdepth 1 -iname '*.tif' | awk 'FNR == 5' | cut -d "." -f2 | tr -d "/").tiff
-ffmpeg -i %04d.tiff -pix_fmt rgb24 -vf tblend=all_mode=average,$crp_fix $(find -s . -maxdepth 1 -iname '*.tif' | awk 'FNR == 4' | cut -d "." -f2 | tr -d "/").tiff
-ffmpeg -i %03d.tiff -pix_fmt rgb24 -vf tblend=all_mode=average,$crp_fix $(find -s . -maxdepth 1 -iname '*.tif' | awk 'FNR == 3' | cut -d "." -f2 | tr -d "/").tiff
-ffmpeg -i %02d.tiff -pix_fmt rgb24 -vf tblend=all_mode=average,$crp_fix $(find -s . -maxdepth 1 -iname '*.tif' | awk 'FNR == 2' | cut -d "." -f2 | tr -d "/").tiff
-ffmpeg -i %01d.tiff -pix_fmt rgb24 -vf tblend=all_mode=average,$crp_fix $(find -s . -maxdepth 1 -iname '*.tif' | awk 'FNR == 1' | cut -d "." -f2 | tr -d "/").tiff
+ffmpeg -i 00001.tiff -pix_fmt rgb24 -vf $crp_fix 00001b.tiff &
+ffmpeg -i 00002.tiff -pix_fmt rgb24 -vf $crp_fix 00002b.tiff &
+ffmpeg -i 0001.tiff -pix_fmt rgb24 -vf $crp_fix 0001b.tiff &
+ffmpeg -i 0002.tiff -pix_fmt rgb24 -vf $crp_fix 0002b.tiff &
+ffmpeg -i 001.tiff -pix_fmt rgb24 -vf $crp_fix 001b.tiff &
+ffmpeg -i 002.tiff -pix_fmt rgb24 -vf $crp_fix 002b.tiff &
+ffmpeg -i 01.tiff -pix_fmt rgb24 -vf $crp_fix 01b.tiff &
+ffmpeg -i 02.tiff -pix_fmt rgb24 -vf $crp_fix 02b.tiff &
+ffmpeg -i 1.tiff -pix_fmt rgb24 -vf $crp_fix 1b.tiff &
+ffmpeg -i 2.tiff -pix_fmt rgb24 -vf $crp_fix 2b.tiff &
+#wait for jobs to end
+    wait < <(jobs -p)
 
-#safeguards
-   if ! [ -f 1.tiff ] || ! [ -f 2.tiff ]
-   then
-   sleep 2
-rm $(find -s . -maxdepth 1 -iname '*.tif' | awk 'FNR == 1' | cut -d "." -f2 | tr -d "/").tiff
-/Applications/Hugin/Hugin.app/Contents/MacOS/align_image_stack -a aligned.tif $(find -s . -maxdepth 1 -iname '*.tif' | awk 'FNR == 1') $(find -s . -maxdepth 1 -iname '*.tif' | awk 'FNR == 2') && mv aligned.tif0000.tif 1.tiff && mv aligned.tif0001.tif 2.tiff
-ffmpeg -i %01d.tiff -pix_fmt rgb24 -vf tblend=all_mode=average,$crp_fix $(find -s . -maxdepth 1 -iname '*.tif' | awk 'FNR == 1' | cut -d "." -f2 | tr -d "/").tiff
-   fi
-
-   if ! [ -f 01.tiff ] || ! [ -f 02.tiff ]
-   then
-   sleep 2
-rm $(find -s . -maxdepth 1 -iname '*.tif' | awk 'FNR == 2' | cut -d "." -f2 | tr -d "/").tiff
-/Applications/Hugin/Hugin.app/Contents/MacOS/align_image_stack -a aligned2.tif $(find -s . -maxdepth 1 -iname '*.tif' | awk 'FNR == 2') $(find -s . -maxdepth 1 -iname '*.tif' | awk 'FNR == 3') && mv aligned2.tif0000.tif 01.tiff && mv aligned2.tif0001.tif 02.tiff
-ffmpeg -i %02d.tiff -pix_fmt rgb24 -vf tblend=all_mode=average,$crp_fix $(find -s . -maxdepth 1 -iname '*.tif' | awk 'FNR == 2' | cut -d "." -f2 | tr -d "/").tiff
-   fi
-
-   if ! [ -f 001.tiff ] || ! [ -f 002.tiff ]
-   then
-   sleep 2
-rm $(find -s . -maxdepth 1 -iname '*.tif' | awk 'FNR == 3' | cut -d "." -f2 | tr -d "/").tiff
-/Applications/Hugin/Hugin.app/Contents/MacOS/align_image_stack -a aligned3.tif $(find -s . -maxdepth 1 -iname '*.tif' | awk 'FNR == 3') $(find -s . -maxdepth 1 -iname '*.tif' | awk 'FNR == 4') && mv aligned3.tif0000.tif 001.tiff && mv aligned3.tif0001.tif 002.tiff
-ffmpeg -i %03d.tiff -pix_fmt rgb24 -vf tblend=all_mode=average,$crp_fix $(find -s . -maxdepth 1 -iname '*.tif' | awk 'FNR == 3' | cut -d "." -f2 | tr -d "/").tiff
-   fi
-
-   if ! [ -f 0001.tiff ] || ! [ -f 0002.tiff ]
-   then
-   sleep 2
-rm $(find -s . -maxdepth 1 -iname '*.tif' | awk 'FNR == 4' | cut -d "." -f2 | tr -d "/").tiff
-/Applications/Hugin/Hugin.app/Contents/MacOS/align_image_stack -a aligned4.tif $(find -s . -maxdepth 1 -iname '*.tif' | awk 'FNR == 4') $(find -s . -maxdepth 1 -iname '*.tif' | awk 'FNR == 5') && mv aligned4.tif0000.tif 0001.tiff && mv aligned4.tif0001.tif 0002.tiff
-ffmpeg -i %04d.tiff -pix_fmt rgb24 -vf tblend=all_mode=average,$crp_fix $(find -s . -maxdepth 1 -iname '*.tif' | awk 'FNR == 4' | cut -d "." -f2 | tr -d "/").tiff
-   fi
-
-   if ! [ -f 00001.tiff ] || ! [ -f 00002.tiff ]
-   then
-   sleep 2
-rm $(find -s . -maxdepth 1 -iname '*.tif' | awk 'FNR == 5' | cut -d "." -f2 | tr -d "/").tiff
-/Applications/Hugin/Hugin.app/Contents/MacOS/align_image_stack -a aligned5.tif $(find -s . -maxdepth 1 -iname '*.tif' | awk 'FNR == 5') $(find -s . -maxdepth 1 -iname '*.tif' | awk 'FNR == 6') && mv aligned5.tif0000.tif 00001.tiff && mv aligned5.tif0001.tif 00002.tiff
-ffmpeg -i %05d.tiff -pix_fmt rgb24 -vf tblend=all_mode=average,$crp_fix $(find -s . -maxdepth 1 -iname '*.tif' | awk 'FNR == 5' | cut -d "." -f2 | tr -d "/").tiff
-   fi
-
+/Applications/Hugin/tools_mac/enfuse 1b.tiff 2b.tiff -o $(find -s . -maxdepth 1 -iname '*.tif' | awk 'FNR == 1' | cut -d "." -f2 | tr -d "/").tiff &
+/Applications/Hugin/tools_mac/enfuse 01b.tiff 02b.tiff -o $(find -s . -maxdepth 1 -iname '*.tif' | awk 'FNR == 2' | cut -d "." -f2 | tr -d "/").tiff &
+/Applications/Hugin/tools_mac/enfuse 001b.tiff 002b.tiff -o $(find -s . -maxdepth 1 -iname '*.tif' | awk 'FNR == 3' | cut -d "." -f2 | tr -d "/").tiff &
+/Applications/Hugin/tools_mac/enfuse 0001b.tiff 0002b.tiff -o $(find -s . -maxdepth 1 -iname '*.tif' | awk 'FNR == 4' | cut -d "." -f2 | tr -d "/").tiff &
+/Applications/Hugin/tools_mac/enfuse 00001b.tiff 00002b.tiff -o $(find -s . -maxdepth 1 -iname '*.tif' | awk 'FNR == 5' | cut -d "." -f2 | tr -d "/").tiff & 
+#wait for jobs to end
+    wait < <(jobs -p)
 #remove unwanted files
 rm 00001.tiff 00002.tiff 0001.tiff 0002.tiff 001.tiff 002.tiff 01.tiff 02.tiff 1.tiff 2.tiff
-
+rm 00001b.tiff 00002b.tiff 0001b.tiff 0002b.tiff 001b.tiff 002b.tiff 01b.tiff 02b.tiff 1b.tiff 2b.tiff
 rm $(find -s . -maxdepth 1 -iname '*.tif' | awk 'FNR == 5') $(find -s . -maxdepth 1 -iname '*.tif' | awk 'FNR == 4') $(find -s . -maxdepth 1 -iname '*.tif' | awk 'FNR == 3') $(find -s . -maxdepth 1 -iname '*.tif' | awk 'FNR == 2') $(find -s . -maxdepth 1 -iname '*.tif' | awk 'FNR == 1')
 fi
 done
@@ -350,6 +345,12 @@ then
 cat <<'EOF' > /tmp/HDR_script2.command
 #!/bin/bash
 cd "$(cat /tmp/Data.txt)"
+
+#log
+#extra logs sent to /tmp/logs/folder
+mkdir -p /tmp/HDRMOVlogs/
+echo "##################HDR_script2.command#####################" > /tmp/HDRMOVlogs/HDR_script2.txt
+#run the log file
 
 while grep 'MOV\|mov\|mp4\|MP4\|mkv\|MKV\|avi\|AVI\|./' /tmp/HDRMOVac; do
 #build a temp folder only if it´s not a folder
@@ -401,57 +402,31 @@ do
 #if killing process
 if ! ls /tmp/KILLMOV 
 then 
+#enfuse workflow. Needs crop to care for align processing. Roundtrip because of enfuse interpolation causing flicker otherwise
 #output cropped and aligned images
-ffmpeg -i %05d.tiff -pix_fmt rgb24 -vf tblend=all_mode=average,$crp_fix $(find -s . -maxdepth 1 -iname '*.tif' | awk 'FNR == 5' | cut -d "." -f2 | tr -d "/").tiff
-ffmpeg -i %04d.tiff -pix_fmt rgb24 -vf tblend=all_mode=average,$crp_fix $(find -s . -maxdepth 1 -iname '*.tif' | awk 'FNR == 4' | cut -d "." -f2 | tr -d "/").tiff
-ffmpeg -i %03d.tiff -pix_fmt rgb24 -vf tblend=all_mode=average,$crp_fix $(find -s . -maxdepth 1 -iname '*.tif' | awk 'FNR == 3' | cut -d "." -f2 | tr -d "/").tiff
-ffmpeg -i %02d.tiff -pix_fmt rgb24 -vf tblend=all_mode=average,$crp_fix $(find -s . -maxdepth 1 -iname '*.tif' | awk 'FNR == 2' | cut -d "." -f2 | tr -d "/").tiff
-ffmpeg -i %01d.tiff -pix_fmt rgb24 -vf tblend=all_mode=average,$crp_fix $(find -s . -maxdepth 1 -iname '*.tif' | awk 'FNR == 1' | cut -d "." -f2 | tr -d "/").tiff
+ffmpeg -i 00001.tiff -pix_fmt rgb24 -vf $crp_fix 00001b.tiff &
+ffmpeg -i 00002.tiff -pix_fmt rgb24 -vf $crp_fix 00002b.tiff &
+ffmpeg -i 0001.tiff -pix_fmt rgb24 -vf $crp_fix 0001b.tiff &
+ffmpeg -i 0002.tiff -pix_fmt rgb24 -vf $crp_fix 0002b.tiff &
+ffmpeg -i 001.tiff -pix_fmt rgb24 -vf $crp_fix 001b.tiff &
+ffmpeg -i 002.tiff -pix_fmt rgb24 -vf $crp_fix 002b.tiff &
+ffmpeg -i 01.tiff -pix_fmt rgb24 -vf $crp_fix 01b.tiff &
+ffmpeg -i 02.tiff -pix_fmt rgb24 -vf $crp_fix 02b.tiff &
+ffmpeg -i 1.tiff -pix_fmt rgb24 -vf $crp_fix 1b.tiff &
+ffmpeg -i 2.tiff -pix_fmt rgb24 -vf $crp_fix 2b.tiff &
+#wait for jobs to end
+    wait < <(jobs -p)
 
-#safeguards
-   if ! [ -f 1.tiff ] || ! [ -f 2.tiff ]
-   then
-   sleep 2
-rm $(find -s . -maxdepth 1 -iname '*.tif' | awk 'FNR == 1' | cut -d "." -f2 | tr -d "/").tiff
-/Applications/Hugin/Hugin.app/Contents/MacOS/align_image_stack -a aligned.tif $(find -s . -maxdepth 1 -iname '*.tif' | awk 'FNR == 1') $(find -s . -maxdepth 1 -iname '*.tif' | awk 'FNR == 2') && mv aligned.tif0000.tif 1.tiff && mv aligned.tif0001.tif 2.tiff
-ffmpeg -i %01d.tiff -pix_fmt rgb24 -vf tblend=all_mode=average,$crp_fix $(find -s . -maxdepth 1 -iname '*.tif' | awk 'FNR == 1' | cut -d "." -f2 | tr -d "/").tiff
-   fi
-
-   if ! [ -f 01.tiff ] || ! [ -f 02.tiff ]
-   then
-   sleep 2
-rm $(find -s . -maxdepth 1 -iname '*.tif' | awk 'FNR == 2' | cut -d "." -f2 | tr -d "/").tiff
-/Applications/Hugin/Hugin.app/Contents/MacOS/align_image_stack -a aligned2.tif $(find -s . -maxdepth 1 -iname '*.tif' | awk 'FNR == 2') $(find -s . -maxdepth 1 -iname '*.tif' | awk 'FNR == 3') && mv aligned2.tif0000.tif 01.tiff && mv aligned2.tif0001.tif 02.tiff
-ffmpeg -i %02d.tiff -pix_fmt rgb24 -vf tblend=all_mode=average,$crp_fix $(find -s . -maxdepth 1 -iname '*.tif' | awk 'FNR == 2' | cut -d "." -f2 | tr -d "/").tiff
-   fi
-
-   if ! [ -f 001.tiff ] || ! [ -f 002.tiff ]
-   then
-   sleep 2
-rm $(find -s . -maxdepth 1 -iname '*.tif' | awk 'FNR == 3' | cut -d "." -f2 | tr -d "/").tiff
-/Applications/Hugin/Hugin.app/Contents/MacOS/align_image_stack -a aligned3.tif $(find -s . -maxdepth 1 -iname '*.tif' | awk 'FNR == 3') $(find -s . -maxdepth 1 -iname '*.tif' | awk 'FNR == 4') && mv aligned3.tif0000.tif 001.tiff && mv aligned3.tif0001.tif 002.tiff
-ffmpeg -i %03d.tiff -pix_fmt rgb24 -vf tblend=all_mode=average,$crp_fix $(find -s . -maxdepth 1 -iname '*.tif' | awk 'FNR == 3' | cut -d "." -f2 | tr -d "/").tiff
-   fi
-
-   if ! [ -f 0001.tiff ] || ! [ -f 0002.tiff ]
-   then
-   sleep 2
-rm $(find -s . -maxdepth 1 -iname '*.tif' | awk 'FNR == 4' | cut -d "." -f2 | tr -d "/").tiff
-/Applications/Hugin/Hugin.app/Contents/MacOS/align_image_stack -a aligned4.tif $(find -s . -maxdepth 1 -iname '*.tif' | awk 'FNR == 4') $(find -s . -maxdepth 1 -iname '*.tif' | awk 'FNR == 5') && mv aligned4.tif0000.tif 0001.tiff && mv aligned4.tif0001.tif 0002.tiff
-ffmpeg -i %04d.tiff -pix_fmt rgb24 -vf tblend=all_mode=average,$crp_fix $(find -s . -maxdepth 1 -iname '*.tif' | awk 'FNR == 4' | cut -d "." -f2 | tr -d "/").tiff
-   fi
-
-   if ! [ -f 00001.tiff ] || ! [ -f 00002.tiff ]
-   then
-   sleep 2
-rm $(find -s . -maxdepth 1 -iname '*.tif' | awk 'FNR == 5' | cut -d "." -f2 | tr -d "/").tiff
-/Applications/Hugin/Hugin.app/Contents/MacOS/align_image_stack -a aligned5.tif $(find -s . -maxdepth 1 -iname '*.tif' | awk 'FNR == 5') $(find -s . -maxdepth 1 -iname '*.tif' | awk 'FNR == 6') && mv aligned5.tif0000.tif 00001.tiff && mv aligned5.tif0001.tif 00002.tiff
-ffmpeg -i %05d.tiff -pix_fmt rgb24 -vf tblend=all_mode=average,$crp_fix $(find -s . -maxdepth 1 -iname '*.tif' | awk 'FNR == 5' | cut -d "." -f2 | tr -d "/").tiff
-   fi
-
+/Applications/Hugin/tools_mac/enfuse 1b.tiff 2b.tiff -o $(find -s . -maxdepth 1 -iname '*.tif' | awk 'FNR == 1' | cut -d "." -f2 | tr -d "/").tiff &
+/Applications/Hugin/tools_mac/enfuse 01b.tiff 02b.tiff -o $(find -s . -maxdepth 1 -iname '*.tif' | awk 'FNR == 2' | cut -d "." -f2 | tr -d "/").tiff &
+/Applications/Hugin/tools_mac/enfuse 001b.tiff 002b.tiff -o $(find -s . -maxdepth 1 -iname '*.tif' | awk 'FNR == 3' | cut -d "." -f2 | tr -d "/").tiff &
+/Applications/Hugin/tools_mac/enfuse 0001b.tiff 0002b.tiff -o $(find -s . -maxdepth 1 -iname '*.tif' | awk 'FNR == 4' | cut -d "." -f2 | tr -d "/").tiff &
+/Applications/Hugin/tools_mac/enfuse 00001b.tiff 00002b.tiff -o $(find -s . -maxdepth 1 -iname '*.tif' | awk 'FNR == 5' | cut -d "." -f2 | tr -d "/").tiff & 
+#wait for jobs to end
+    wait < <(jobs -p)
 #remove unwanted files
 rm 00001.tiff 00002.tiff 0001.tiff 0002.tiff 001.tiff 002.tiff 01.tiff 02.tiff 1.tiff 2.tiff
-
+rm 00001b.tiff 00002b.tiff 0001b.tiff 0002b.tiff 001b.tiff 002b.tiff 01b.tiff 02b.tiff 1b.tiff 2b.tiff
 rm $(find -s . -maxdepth 1 -iname '*.tif' | awk 'FNR == 5') $(find -s . -maxdepth 1 -iname '*.tif' | awk 'FNR == 4') $(find -s . -maxdepth 1 -iname '*.tif' | awk 'FNR == 3') $(find -s . -maxdepth 1 -iname '*.tif' | awk 'FNR == 2') $(find -s . -maxdepth 1 -iname '*.tif' | awk 'FNR == 1')
 fi
 done
@@ -500,6 +475,12 @@ then
 cat <<'EOF' > /tmp/HDR_script3.command
 #!/bin/bash
 cd "$(cat /tmp/Data.txt)"
+
+#log
+#extra logs sent to /tmp/logs/folder
+mkdir -p /tmp/HDRMOVlogs/
+echo "##################HDR_script3.command#####################" > /tmp/HDRMOVlogs/HDR_script3.txt
+#run the log file
 
 while grep 'MOV\|mov\|mp4\|MP4\|mkv\|MKV\|avi\|AVI\|./' /tmp/HDRMOVad; do
 #build a temp folder only if it´s not a folder
@@ -551,57 +532,32 @@ do
 #if killing process
 if ! ls /tmp/KILLMOV 
 then 
+
+#enfuse workflow. Needs crop to care for align processing. Roundtrip because of enfuse interpolation causing flicker otherwise
 #output cropped and aligned images
-ffmpeg -i %05d.tiff -pix_fmt rgb24 -vf tblend=all_mode=average,$crp_fix $(find -s . -maxdepth 1 -iname '*.tif' | awk 'FNR == 5' | cut -d "." -f2 | tr -d "/").tiff
-ffmpeg -i %04d.tiff -pix_fmt rgb24 -vf tblend=all_mode=average,$crp_fix $(find -s . -maxdepth 1 -iname '*.tif' | awk 'FNR == 4' | cut -d "." -f2 | tr -d "/").tiff
-ffmpeg -i %03d.tiff -pix_fmt rgb24 -vf tblend=all_mode=average,$crp_fix $(find -s . -maxdepth 1 -iname '*.tif' | awk 'FNR == 3' | cut -d "." -f2 | tr -d "/").tiff
-ffmpeg -i %02d.tiff -pix_fmt rgb24 -vf tblend=all_mode=average,$crp_fix $(find -s . -maxdepth 1 -iname '*.tif' | awk 'FNR == 2' | cut -d "." -f2 | tr -d "/").tiff
-ffmpeg -i %01d.tiff -pix_fmt rgb24 -vf tblend=all_mode=average,$crp_fix $(find -s . -maxdepth 1 -iname '*.tif' | awk 'FNR == 1' | cut -d "." -f2 | tr -d "/").tiff
+ffmpeg -i 00001.tiff -pix_fmt rgb24 -vf $crp_fix 00001b.tiff &
+ffmpeg -i 00002.tiff -pix_fmt rgb24 -vf $crp_fix 00002b.tiff &
+ffmpeg -i 0001.tiff -pix_fmt rgb24 -vf $crp_fix 0001b.tiff &
+ffmpeg -i 0002.tiff -pix_fmt rgb24 -vf $crp_fix 0002b.tiff &
+ffmpeg -i 001.tiff -pix_fmt rgb24 -vf $crp_fix 001b.tiff &
+ffmpeg -i 002.tiff -pix_fmt rgb24 -vf $crp_fix 002b.tiff &
+ffmpeg -i 01.tiff -pix_fmt rgb24 -vf $crp_fix 01b.tiff &
+ffmpeg -i 02.tiff -pix_fmt rgb24 -vf $crp_fix 02b.tiff &
+ffmpeg -i 1.tiff -pix_fmt rgb24 -vf $crp_fix 1b.tiff &
+ffmpeg -i 2.tiff -pix_fmt rgb24 -vf $crp_fix 2b.tiff &
+#wait for jobs to end
+    wait < <(jobs -p)
 
-#safeguards
-   if ! [ -f 1.tiff ] || ! [ -f 2.tiff ]
-   then
-   sleep 2
-rm $(find -s . -maxdepth 1 -iname '*.tif' | awk 'FNR == 1' | cut -d "." -f2 | tr -d "/").tiff
-/Applications/Hugin/Hugin.app/Contents/MacOS/align_image_stack -a aligned.tif $(find -s . -maxdepth 1 -iname '*.tif' | awk 'FNR == 1') $(find -s . -maxdepth 1 -iname '*.tif' | awk 'FNR == 2') && mv aligned.tif0000.tif 1.tiff && mv aligned.tif0001.tif 2.tiff
-ffmpeg -i %01d.tiff -pix_fmt rgb24 -vf tblend=all_mode=average,$crp_fix $(find -s . -maxdepth 1 -iname '*.tif' | awk 'FNR == 1' | cut -d "." -f2 | tr -d "/").tiff
-   fi
-
-   if ! [ -f 01.tiff ] || ! [ -f 02.tiff ]
-   then
-   sleep 2
-rm $(find -s . -maxdepth 1 -iname '*.tif' | awk 'FNR == 2' | cut -d "." -f2 | tr -d "/").tiff
-/Applications/Hugin/Hugin.app/Contents/MacOS/align_image_stack -a aligned2.tif $(find -s . -maxdepth 1 -iname '*.tif' | awk 'FNR == 2') $(find -s . -maxdepth 1 -iname '*.tif' | awk 'FNR == 3') && mv aligned2.tif0000.tif 01.tiff && mv aligned2.tif0001.tif 02.tiff
-ffmpeg -i %02d.tiff -pix_fmt rgb24 -vf tblend=all_mode=average,$crp_fix $(find -s . -maxdepth 1 -iname '*.tif' | awk 'FNR == 2' | cut -d "." -f2 | tr -d "/").tiff
-   fi
-
-   if ! [ -f 001.tiff ] || ! [ -f 002.tiff ]
-   then
-   sleep 2
-rm $(find -s . -maxdepth 1 -iname '*.tif' | awk 'FNR == 3' | cut -d "." -f2 | tr -d "/").tiff
-/Applications/Hugin/Hugin.app/Contents/MacOS/align_image_stack -a aligned3.tif $(find -s . -maxdepth 1 -iname '*.tif' | awk 'FNR == 3') $(find -s . -maxdepth 1 -iname '*.tif' | awk 'FNR == 4') && mv aligned3.tif0000.tif 001.tiff && mv aligned3.tif0001.tif 002.tiff
-ffmpeg -i %03d.tiff -pix_fmt rgb24 -vf tblend=all_mode=average,$crp_fix $(find -s . -maxdepth 1 -iname '*.tif' | awk 'FNR == 3' | cut -d "." -f2 | tr -d "/").tiff
-   fi
-
-   if ! [ -f 0001.tiff ] || ! [ -f 0002.tiff ]
-   then
-   sleep 2
-rm $(find -s . -maxdepth 1 -iname '*.tif' | awk 'FNR == 4' | cut -d "." -f2 | tr -d "/").tiff
-/Applications/Hugin/Hugin.app/Contents/MacOS/align_image_stack -a aligned4.tif $(find -s . -maxdepth 1 -iname '*.tif' | awk 'FNR == 4') $(find -s . -maxdepth 1 -iname '*.tif' | awk 'FNR == 5') && mv aligned4.tif0000.tif 0001.tiff && mv aligned4.tif0001.tif 0002.tiff
-ffmpeg -i %04d.tiff -pix_fmt rgb24 -vf tblend=all_mode=average,$crp_fix $(find -s . -maxdepth 1 -iname '*.tif' | awk 'FNR == 4' | cut -d "." -f2 | tr -d "/").tiff
-   fi
-
-   if ! [ -f 00001.tiff ] || ! [ -f 00002.tiff ]
-   then
-   sleep 2
-rm $(find -s . -maxdepth 1 -iname '*.tif' | awk 'FNR == 5' | cut -d "." -f2 | tr -d "/").tiff
-/Applications/Hugin/Hugin.app/Contents/MacOS/align_image_stack -a aligned5.tif $(find -s . -maxdepth 1 -iname '*.tif' | awk 'FNR == 5') $(find -s . -maxdepth 1 -iname '*.tif' | awk 'FNR == 6') && mv aligned5.tif0000.tif 00001.tiff && mv aligned5.tif0001.tif 00002.tiff
-ffmpeg -i %05d.tiff -pix_fmt rgb24 -vf tblend=all_mode=average,$crp_fix $(find -s . -maxdepth 1 -iname '*.tif' | awk 'FNR == 5' | cut -d "." -f2 | tr -d "/").tiff
-   fi
-
+/Applications/Hugin/tools_mac/enfuse 1b.tiff 2b.tiff -o $(find -s . -maxdepth 1 -iname '*.tif' | awk 'FNR == 1' | cut -d "." -f2 | tr -d "/").tiff &
+/Applications/Hugin/tools_mac/enfuse 01b.tiff 02b.tiff -o $(find -s . -maxdepth 1 -iname '*.tif' | awk 'FNR == 2' | cut -d "." -f2 | tr -d "/").tiff &
+/Applications/Hugin/tools_mac/enfuse 001b.tiff 002b.tiff -o $(find -s . -maxdepth 1 -iname '*.tif' | awk 'FNR == 3' | cut -d "." -f2 | tr -d "/").tiff &
+/Applications/Hugin/tools_mac/enfuse 0001b.tiff 0002b.tiff -o $(find -s . -maxdepth 1 -iname '*.tif' | awk 'FNR == 4' | cut -d "." -f2 | tr -d "/").tiff &
+/Applications/Hugin/tools_mac/enfuse 00001b.tiff 00002b.tiff -o $(find -s . -maxdepth 1 -iname '*.tif' | awk 'FNR == 5' | cut -d "." -f2 | tr -d "/").tiff & 
+#wait for jobs to end
+    wait < <(jobs -p)
 #remove unwanted files
 rm 00001.tiff 00002.tiff 0001.tiff 0002.tiff 001.tiff 002.tiff 01.tiff 02.tiff 1.tiff 2.tiff
-
+rm 00001b.tiff 00002b.tiff 0001b.tiff 0002b.tiff 001b.tiff 002b.tiff 01b.tiff 02b.tiff 1b.tiff 2b.tiff
 rm $(find -s . -maxdepth 1 -iname '*.tif' | awk 'FNR == 5') $(find -s . -maxdepth 1 -iname '*.tif' | awk 'FNR == 4') $(find -s . -maxdepth 1 -iname '*.tif' | awk 'FNR == 3') $(find -s . -maxdepth 1 -iname '*.tif' | awk 'FNR == 2') $(find -s . -maxdepth 1 -iname '*.tif' | awk 'FNR == 1')
 fi
 done
@@ -649,6 +605,9 @@ fi
 cat <<'EOF' > /tmp/fps.command
 #!/bin/bash
 cd "$(cat /tmp/Data.txt)"
+
+echo "##################fps.command#####################" >> HDRMOV_LOG.txt
+#run the log file
 
 ###########dependencies############
 #homebrew
@@ -810,7 +769,6 @@ sleep 1 && . /tmp/HDR_script1.command &
 sleep 1 && . /tmp/HDR_script2.command &
 sleep 1 && . /tmp/HDR_script3.command &
 
-
 sleep 1 && rm /tmp/fps.command & echo -n -e "\033]0;fps\007" && osascript -e 'tell application "Terminal" to close (every window whose name contains "fps")' & exit
 
 EOF
@@ -834,14 +792,21 @@ cat<<EOF1
     ------------
     $(tput setaf 0)$(tput bold)HDR_MOV bash$(tput sgr0)
     ------------
- $(tput bold)$(tput setaf 1)(K) Kill HDR_MOV bash$(tput sgr0)
- $(tput bold)$(tput setaf 1)(q) Close this window$(tput sgr0)
+ $(tput bold)$(tput setaf 1)(C) CANCEL$(tput sgr0)
+ $(tput bold)$(tput setaf 1)(e) Close this window$(tput sgr0)
 
 Selection number:
 EOF1
     read -n1
     case "$REPLY" in
-    "K") 
+    "C") 
+echo "" >> HDRMOV_LOG.txt
+echo "##################progress_bar.command#####################" >> HDRMOV_LOG.txt
+#run the log file
+
+echo "" >> HDRMOV_LOG.txt
+echo "ALL PROCESSES ARE CANCELLED!" >> HDRMOV_LOG.txt
+echo "" >> HDRMOV_LOG.txt
 echo > /tmp/KILLMOV
 killall sleep
 killall align_image_stack
@@ -855,11 +820,11 @@ sleep 2 && rm /tmp/HDR_script*.command &
 rm /tmp/HDRMOV*
 rm /tmp/HDR_script*.command
 rm /tmp/KILLMOV
-
+echo echo "$(date)" >> HDRMOV_LOG.txt
 osascript -e 'tell application "Terminal" to close first window' & exit
 ;;
 
-    "q") 
+    "e") 
 osascript -e 'tell application "Terminal" to close first window' & exit
 ;;
 
