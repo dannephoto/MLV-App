@@ -50,12 +50,6 @@ echo "exiftool: /usr/local/bin/exiftool" >> HDRMOV_LOG.txt
 else
 echo "exiftool: MISSING!" >> HDRMOV_LOG.txt
 fi
-if [ -f "/usr/local/bin/ffmpeg" ]
-then
-echo "ffmpeg: /usr/local/bin/ffmpeg" >> HDRMOV_LOG.txt
-else
-echo "ffmpeg: MISSING!" >> HDRMOV_LOG.txt
-fi
 echo ""  >> HDRMOV_LOG.txt
 echo "take note that if you run the script for the first time
 dependencies will naturally be missing in this log file"  >> HDRMOV_LOG.txt
@@ -101,7 +95,7 @@ mkdir -p $(cat /tmp/HDRMOVaa | head -1 | cut -d "." -f1)
 mv $(cat /tmp/HDRMOVaa | head -1) $(cat /tmp/HDRMOVaa | head -1 | cut -d "." -f1)
 cd "$(cat /tmp/HDRMOVaa | head -1 | cut -d "." -f1)"
 #spit out tif files
-ffmpeg -i $(cat /tmp/HDRMOVaa | head -1) -pix_fmt rgb24 %06d.tif
+"$(cat /tmp/Data2.txt)"/ffmpeg -i $(cat /tmp/HDRMOVaa | head -1) -pix_fmt rgb24 %06d.tif
 else
 #seems we have tif folders
 cd "$(cat /tmp/HDRMOVaa | head -1 | cut -d '/' -f2)"
@@ -143,16 +137,16 @@ if ! ls /tmp/KILLMOV
 then 
 #enfuse workflow. Needs crop to care for align processing. Roundtrip because of enfuse interpolation causing flicker otherwise
 #output cropped and aligned images
-ffmpeg -i 00001.tiff -pix_fmt rgb24 -vf $crp_fix 00001b.tiff &
-ffmpeg -i 00002.tiff -pix_fmt rgb24 -vf $crp_fix 00002b.tiff &
-ffmpeg -i 0001.tiff -pix_fmt rgb24 -vf $crp_fix 0001b.tiff &
-ffmpeg -i 0002.tiff -pix_fmt rgb24 -vf $crp_fix 0002b.tiff &
-ffmpeg -i 001.tiff -pix_fmt rgb24 -vf $crp_fix 001b.tiff &
-ffmpeg -i 002.tiff -pix_fmt rgb24 -vf $crp_fix 002b.tiff &
-ffmpeg -i 01.tiff -pix_fmt rgb24 -vf $crp_fix 01b.tiff &
-ffmpeg -i 02.tiff -pix_fmt rgb24 -vf $crp_fix 02b.tiff &
-ffmpeg -i 1.tiff -pix_fmt rgb24 -vf $crp_fix 1b.tiff &
-ffmpeg -i 2.tiff -pix_fmt rgb24 -vf $crp_fix 2b.tiff &
+"$(cat /tmp/Data2.txt)"/ffmpeg -i 00001.tiff -pix_fmt rgb24 -vf $crp_fix 00001b.tiff &
+"$(cat /tmp/Data2.txt)"/ffmpeg -i 00002.tiff -pix_fmt rgb24 -vf $crp_fix 00002b.tiff &
+"$(cat /tmp/Data2.txt)"/ffmpeg -i 0001.tiff -pix_fmt rgb24 -vf $crp_fix 0001b.tiff &
+"$(cat /tmp/Data2.txt)"/ffmpeg -i 0002.tiff -pix_fmt rgb24 -vf $crp_fix 0002b.tiff &
+"$(cat /tmp/Data2.txt)"/ffmpeg -i 001.tiff -pix_fmt rgb24 -vf $crp_fix 001b.tiff &
+"$(cat /tmp/Data2.txt)"/ffmpeg -i 002.tiff -pix_fmt rgb24 -vf $crp_fix 002b.tiff &
+"$(cat /tmp/Data2.txt)"/ffmpeg -i 01.tiff -pix_fmt rgb24 -vf $crp_fix 01b.tiff &
+"$(cat /tmp/Data2.txt)"/ffmpeg -i 02.tiff -pix_fmt rgb24 -vf $crp_fix 02b.tiff &
+"$(cat /tmp/Data2.txt)"/ffmpeg -i 1.tiff -pix_fmt rgb24 -vf $crp_fix 1b.tiff &
+"$(cat /tmp/Data2.txt)"/ffmpeg -i 2.tiff -pix_fmt rgb24 -vf $crp_fix 2b.tiff &
 #wait for jobs to end
     wait < <(jobs -p)
 
@@ -171,9 +165,9 @@ fi
 done
 
 #check for audio
-if ! [ x"$(ffmpeg -i $(ls *.{MOV,mov,mp4,MP4,mkv,MKV,avi,AVI} | grep -v 'HDR_' | head -1) 2>&1 | grep Audio)" = x ]
+if ! [ x"$("$(cat /tmp/Data2.txt)"/ffmpeg -i $(ls *.{MOV,mov,mp4,MP4,mkv,MKV,avi,AVI} | grep -v 'HDR_' | head -1) 2>&1 | grep Audio)" = x ]
 then 
-ffmpeg -i $(ls *.{MOV,mov,mp4,MP4,mkv,MKV,avi,AVI} | grep -v 'HDR_' | head -1) -vn -acodec copy $(ls *.{MOV,mov,mp4,MP4,mkv,MKV,avi,AVI} | grep -v 'HDR_' | head -1 | cut -d "." -f1).wav
+"$(cat /tmp/Data2.txt)"/ffmpeg -i $(ls *.{MOV,mov,mp4,MP4,mkv,MKV,avi,AVI} | grep -v 'HDR_' | head -1) -vn -acodec copy $(ls *.{MOV,mov,mp4,MP4,mkv,MKV,avi,AVI} | grep -v 'HDR_' | head -1 | cut -d "." -f1).wav
 wav=$(printf "%s\n" -i $(ls *.{MOV,mov,mp4,MP4,mkv,MKV,avi,AVI} | grep -v 'HDR_' | head -1 | cut -d "." -f1).wav)
 acodec=$(printf "%s\n" -c:v copy -c:a aac)
 fi
@@ -188,11 +182,11 @@ fi
 #check for tif folders
 if ! grep './' /tmp/HDRMOVaa
 then
-ffmpeg $wav -r $(exiftool $(ls *.{MOV,mov,mp4,MP4,mkv,MKV,avi,AVI} | grep -v 'HDR_' | head -1) | grep 'Video Frame Rate' | cut -d ":" -f2) -i %06d.tiff $acodec -vcodec prores -pix_fmt yuv422p10le ../HDR_$(cat /tmp/HDRMOVaa | head -1 | cut -d "." -f1).mov
+"$(cat /tmp/Data2.txt)"/ffmpeg $wav -r $(exiftool $(ls *.{MOV,mov,mp4,MP4,mkv,MKV,avi,AVI} | grep -v 'HDR_' | head -1) | grep 'Video Frame Rate' | cut -d ":" -f2) -i %06d.tiff $acodec -vcodec prores -pix_fmt yuv422p10le ../HDR_$(cat /tmp/HDRMOVaa | head -1 | cut -d "." -f1).mov
 #remove tiff files and HDR mov when done
 rm -r ../$(cat /tmp/HDRMOVaa | head -1 | cut -d "." -f1)
 else
-ffmpeg $wav -r $(cat fps) -i "$(cat /tmp/HDRMOVaa | head -1 | cut -d '/' -f2 | cut -d "." -f1)"_%06d.tiff $acodec -vcodec prores -pix_fmt yuv422p10le ../HDR_$(cat /tmp/HDRMOVaa | head -1 | cut -d '/' -f2 | cut -d "." -f1).mov
+"$(cat /tmp/Data2.txt)"/ffmpeg $wav -r $(cat fps) -i "$(cat /tmp/HDRMOVaa | head -1 | cut -d '/' -f2 | cut -d "." -f1)"_%06d.tiff $acodec -vcodec prores -pix_fmt yuv422p10le ../HDR_$(cat /tmp/HDRMOVaa | head -1 | cut -d '/' -f2 | cut -d "." -f1).mov
 #remove tiff files when done
 rm -r ../$(cat /tmp/HDRMOVaa | head -1 | cut -d '/' -f2 | cut -d "." -f1)
 fi
@@ -230,7 +224,7 @@ mkdir -p $(cat /tmp/HDRMOVab | head -1 | cut -d "." -f1)
 mv $(cat /tmp/HDRMOVab | head -1) $(cat /tmp/HDRMOVab | head -1 | cut -d "." -f1)
 cd "$(cat /tmp/HDRMOVab | head -1 | cut -d "." -f1)"
 #spit out tif files
-ffmpeg -i $(cat /tmp/HDRMOVab | head -1) -pix_fmt rgb24 %06d.tif
+"$(cat /tmp/Data2.txt)"/ffmpeg -i $(cat /tmp/HDRMOVab | head -1) -pix_fmt rgb24 %06d.tif
 else
 #seems we have tif folders
 cd "$(cat /tmp/HDRMOVab | head -1 | cut -d '/' -f2)"
@@ -273,16 +267,16 @@ if ! ls /tmp/KILLMOV
 then 
 #enfuse workflow. Needs crop to care for align processing. Roundtrip because of enfuse interpolation causing flicker otherwise
 #output cropped and aligned images
-ffmpeg -i 00001.tiff -pix_fmt rgb24 -vf $crp_fix 00001b.tiff &
-ffmpeg -i 00002.tiff -pix_fmt rgb24 -vf $crp_fix 00002b.tiff &
-ffmpeg -i 0001.tiff -pix_fmt rgb24 -vf $crp_fix 0001b.tiff &
-ffmpeg -i 0002.tiff -pix_fmt rgb24 -vf $crp_fix 0002b.tiff &
-ffmpeg -i 001.tiff -pix_fmt rgb24 -vf $crp_fix 001b.tiff &
-ffmpeg -i 002.tiff -pix_fmt rgb24 -vf $crp_fix 002b.tiff &
-ffmpeg -i 01.tiff -pix_fmt rgb24 -vf $crp_fix 01b.tiff &
-ffmpeg -i 02.tiff -pix_fmt rgb24 -vf $crp_fix 02b.tiff &
-ffmpeg -i 1.tiff -pix_fmt rgb24 -vf $crp_fix 1b.tiff &
-ffmpeg -i 2.tiff -pix_fmt rgb24 -vf $crp_fix 2b.tiff &
+"$(cat /tmp/Data2.txt)"/ffmpeg -i 00001.tiff -pix_fmt rgb24 -vf $crp_fix 00001b.tiff &
+"$(cat /tmp/Data2.txt)"/ffmpeg -i 00002.tiff -pix_fmt rgb24 -vf $crp_fix 00002b.tiff &
+"$(cat /tmp/Data2.txt)"/ffmpeg -i 0001.tiff -pix_fmt rgb24 -vf $crp_fix 0001b.tiff &
+"$(cat /tmp/Data2.txt)"/ffmpeg -i 0002.tiff -pix_fmt rgb24 -vf $crp_fix 0002b.tiff &
+"$(cat /tmp/Data2.txt)"/ffmpeg -i 001.tiff -pix_fmt rgb24 -vf $crp_fix 001b.tiff &
+"$(cat /tmp/Data2.txt)"/ffmpeg -i 002.tiff -pix_fmt rgb24 -vf $crp_fix 002b.tiff &
+"$(cat /tmp/Data2.txt)"/ffmpeg -i 01.tiff -pix_fmt rgb24 -vf $crp_fix 01b.tiff &
+"$(cat /tmp/Data2.txt)"/ffmpeg -i 02.tiff -pix_fmt rgb24 -vf $crp_fix 02b.tiff &
+"$(cat /tmp/Data2.txt)"/ffmpeg -i 1.tiff -pix_fmt rgb24 -vf $crp_fix 1b.tiff &
+"$(cat /tmp/Data2.txt)"/ffmpeg -i 2.tiff -pix_fmt rgb24 -vf $crp_fix 2b.tiff &
 #wait for jobs to end
     wait < <(jobs -p)
 
@@ -301,9 +295,9 @@ fi
 done
 
 #check for audio
-if ! [ x"$(ffmpeg -i $(ls *.{MOV,mov,mp4,MP4,mkv,MKV,avi,AVI} | grep -v 'HDR_' | head -1) 2>&1 | grep Audio)" = x ]
+if ! [ x"$("$(cat /tmp/Data2.txt)"/ffmpeg -i $(ls *.{MOV,mov,mp4,MP4,mkv,MKV,avi,AVI} | grep -v 'HDR_' | head -1) 2>&1 | grep Audio)" = x ]
 then 
-ffmpeg -i $(ls *.{MOV,mov,mp4,MP4,mkv,MKV,avi,AVI} | grep -v 'HDR_' | head -1) -vn -acodec copy $(ls *.{MOV,mov,mp4,MP4,mkv,MKV,avi,AVI} | grep -v 'HDR_' | head -1 | cut -d "." -f1).wav
+"$(cat /tmp/Data2.txt)"/ffmpeg -i $(ls *.{MOV,mov,mp4,MP4,mkv,MKV,avi,AVI} | grep -v 'HDR_' | head -1) -vn -acodec copy $(ls *.{MOV,mov,mp4,MP4,mkv,MKV,avi,AVI} | grep -v 'HDR_' | head -1 | cut -d "." -f1).wav
 wav=$(printf "%s\n" -i $(ls *.{MOV,mov,mp4,MP4,mkv,MKV,avi,AVI} | grep -v 'HDR_' | head -1 | cut -d "." -f1).wav)
 acodec=$(printf "%s\n" -c:v copy -c:a aac)
 fi
@@ -318,11 +312,11 @@ fi
 #check for tif folders
 if ! grep './' /tmp/HDRMOVab
 then
-ffmpeg $wav -r $(exiftool $(ls *.{MOV,mov,mp4,MP4,mkv,MKV,avi,AVI} | grep -v 'HDR_' | head -1) | grep 'Video Frame Rate' | cut -d ":" -f2) -i %06d.tiff $acodec -vcodec prores -pix_fmt yuv422p10le ../HDR_$(cat /tmp/HDRMOVab | head -1 | cut -d "." -f1).mov
+"$(cat /tmp/Data2.txt)"/ffmpeg $wav -r $(exiftool $(ls *.{MOV,mov,mp4,MP4,mkv,MKV,avi,AVI} | grep -v 'HDR_' | head -1) | grep 'Video Frame Rate' | cut -d ":" -f2) -i %06d.tiff $acodec -vcodec prores -pix_fmt yuv422p10le ../HDR_$(cat /tmp/HDRMOVab | head -1 | cut -d "." -f1).mov
 #remove tiff files and HDR mov when done
 rm -r ../$(cat /tmp/HDRMOVab | head -1 | cut -d "." -f1)
 else
-ffmpeg $wav -r $(cat fps) -i "$(cat /tmp/HDRMOVab | head -1 | cut -d '/' -f2 | cut -d "." -f1)"_%06d.tiff $acodec -vcodec prores -pix_fmt yuv422p10le ../HDR_$(cat /tmp/HDRMOVab | head -1 | cut -d '/' -f2 | cut -d "." -f1).mov
+"$(cat /tmp/Data2.txt)"/ffmpeg $wav -r $(cat fps) -i "$(cat /tmp/HDRMOVab | head -1 | cut -d '/' -f2 | cut -d "." -f1)"_%06d.tiff $acodec -vcodec prores -pix_fmt yuv422p10le ../HDR_$(cat /tmp/HDRMOVab | head -1 | cut -d '/' -f2 | cut -d "." -f1).mov
 #remove tiff files when done
 rm -r ../$(cat /tmp/HDRMOVab | head -1 | cut -d '/' -f2 | cut -d "." -f1)
 fi
@@ -360,7 +354,7 @@ mkdir -p $(cat /tmp/HDRMOVac | head -1 | cut -d "." -f1)
 mv $(cat /tmp/HDRMOVac | head -1) $(cat /tmp/HDRMOVac | head -1 | cut -d "." -f1)
 cd "$(cat /tmp/HDRMOVac | head -1 | cut -d "." -f1)"
 #spit out tif files
-ffmpeg -i $(cat /tmp/HDRMOVac | head -1) -pix_fmt rgb24 %06d.tif
+"$(cat /tmp/Data2.txt)"/ffmpeg -i $(cat /tmp/HDRMOVac | head -1) -pix_fmt rgb24 %06d.tif
 else
 #seems we have tif folders
 cd "$(cat /tmp/HDRMOVac | head -1 | cut -d '/' -f2)"
@@ -404,16 +398,16 @@ if ! ls /tmp/KILLMOV
 then 
 #enfuse workflow. Needs crop to care for align processing. Roundtrip because of enfuse interpolation causing flicker otherwise
 #output cropped and aligned images
-ffmpeg -i 00001.tiff -pix_fmt rgb24 -vf $crp_fix 00001b.tiff &
-ffmpeg -i 00002.tiff -pix_fmt rgb24 -vf $crp_fix 00002b.tiff &
-ffmpeg -i 0001.tiff -pix_fmt rgb24 -vf $crp_fix 0001b.tiff &
-ffmpeg -i 0002.tiff -pix_fmt rgb24 -vf $crp_fix 0002b.tiff &
-ffmpeg -i 001.tiff -pix_fmt rgb24 -vf $crp_fix 001b.tiff &
-ffmpeg -i 002.tiff -pix_fmt rgb24 -vf $crp_fix 002b.tiff &
-ffmpeg -i 01.tiff -pix_fmt rgb24 -vf $crp_fix 01b.tiff &
-ffmpeg -i 02.tiff -pix_fmt rgb24 -vf $crp_fix 02b.tiff &
-ffmpeg -i 1.tiff -pix_fmt rgb24 -vf $crp_fix 1b.tiff &
-ffmpeg -i 2.tiff -pix_fmt rgb24 -vf $crp_fix 2b.tiff &
+"$(cat /tmp/Data2.txt)"/ffmpeg -i 00001.tiff -pix_fmt rgb24 -vf $crp_fix 00001b.tiff &
+"$(cat /tmp/Data2.txt)"/ffmpeg -i 00002.tiff -pix_fmt rgb24 -vf $crp_fix 00002b.tiff &
+"$(cat /tmp/Data2.txt)"/ffmpeg -i 0001.tiff -pix_fmt rgb24 -vf $crp_fix 0001b.tiff &
+"$(cat /tmp/Data2.txt)"/ffmpeg -i 0002.tiff -pix_fmt rgb24 -vf $crp_fix 0002b.tiff &
+"$(cat /tmp/Data2.txt)"/ffmpeg -i 001.tiff -pix_fmt rgb24 -vf $crp_fix 001b.tiff &
+"$(cat /tmp/Data2.txt)"/ffmpeg -i 002.tiff -pix_fmt rgb24 -vf $crp_fix 002b.tiff &
+"$(cat /tmp/Data2.txt)"/ffmpeg -i 01.tiff -pix_fmt rgb24 -vf $crp_fix 01b.tiff &
+"$(cat /tmp/Data2.txt)"/ffmpeg -i 02.tiff -pix_fmt rgb24 -vf $crp_fix 02b.tiff &
+"$(cat /tmp/Data2.txt)"/ffmpeg -i 1.tiff -pix_fmt rgb24 -vf $crp_fix 1b.tiff &
+"$(cat /tmp/Data2.txt)"/ffmpeg -i 2.tiff -pix_fmt rgb24 -vf $crp_fix 2b.tiff &
 #wait for jobs to end
     wait < <(jobs -p)
 
@@ -432,9 +426,9 @@ fi
 done
 
 #check for audio
-if ! [ x"$(ffmpeg -i $(ls *.{MOV,mov,mp4,MP4,mkv,MKV,avi,AVI} | grep -v 'HDR_' | head -1) 2>&1 | grep Audio)" = x ]
+if ! [ x"$("$(cat /tmp/Data2.txt)"/ffmpeg -i $(ls *.{MOV,mov,mp4,MP4,mkv,MKV,avi,AVI} | grep -v 'HDR_' | head -1) 2>&1 | grep Audio)" = x ]
 then 
-ffmpeg -i $(ls *.{MOV,mov,mp4,MP4,mkv,MKV,avi,AVI} | grep -v 'HDR_' | head -1) -vn -acodec copy $(ls *.{MOV,mov,mp4,MP4,mkv,MKV,avi,AVI} | grep -v 'HDR_' | head -1 | cut -d "." -f1).wav
+"$(cat /tmp/Data2.txt)"/ffmpeg -i $(ls *.{MOV,mov,mp4,MP4,mkv,MKV,avi,AVI} | grep -v 'HDR_' | head -1) -vn -acodec copy $(ls *.{MOV,mov,mp4,MP4,mkv,MKV,avi,AVI} | grep -v 'HDR_' | head -1 | cut -d "." -f1).wav
 wav=$(printf "%s\n" -i $(ls *.{MOV,mov,mp4,MP4,mkv,MKV,avi,AVI} | grep -v 'HDR_' | head -1 | cut -d "." -f1).wav)
 acodec=$(printf "%s\n" -c:v copy -c:a aac)
 fi
@@ -449,11 +443,11 @@ fi
 #check for tif folders
 if ! grep './' /tmp/HDRMOVac
 then
-ffmpeg $wav -r $(exiftool $(ls *.{MOV,mov,mp4,MP4,mkv,MKV,avi,AVI} | grep -v 'HDR_' | head -1) | grep 'Video Frame Rate' | cut -d ":" -f2) -i %06d.tiff $acodec -vcodec prores -pix_fmt yuv422p10le ../HDR_$(cat /tmp/HDRMOVac | head -1 | cut -d "." -f1).mov
+"$(cat /tmp/Data2.txt)"/ffmpeg $wav -r $(exiftool $(ls *.{MOV,mov,mp4,MP4,mkv,MKV,avi,AVI} | grep -v 'HDR_' | head -1) | grep 'Video Frame Rate' | cut -d ":" -f2) -i %06d.tiff $acodec -vcodec prores -pix_fmt yuv422p10le ../HDR_$(cat /tmp/HDRMOVac | head -1 | cut -d "." -f1).mov
 #remove tiff files and HDR mov when done
 rm -r ../$(cat /tmp/HDRMOVac | head -1 | cut -d "." -f1)
 else
-ffmpeg $wav -r $(cat fps) -i "$(cat /tmp/HDRMOVac | head -1 | cut -d '/' -f2 | cut -d "." -f1)"_%06d.tiff $acodec -vcodec prores -pix_fmt yuv422p10le ../HDR_$(cat /tmp/HDRMOVac | head -1 | cut -d '/' -f2 | cut -d "." -f1).mov
+"$(cat /tmp/Data2.txt)"/ffmpeg $wav -r $(cat fps) -i "$(cat /tmp/HDRMOVac | head -1 | cut -d '/' -f2 | cut -d "." -f1)"_%06d.tiff $acodec -vcodec prores -pix_fmt yuv422p10le ../HDR_$(cat /tmp/HDRMOVac | head -1 | cut -d '/' -f2 | cut -d "." -f1).mov
 #remove tiff files when done
 rm -r ../$(cat /tmp/HDRMOVac | head -1 | cut -d '/' -f2 | cut -d "." -f1)
 fi
@@ -490,7 +484,7 @@ mkdir -p $(cat /tmp/HDRMOVad | head -1 | cut -d "." -f1)
 mv $(cat /tmp/HDRMOVad | head -1) $(cat /tmp/HDRMOVad | head -1 | cut -d "." -f1)
 cd "$(cat /tmp/HDRMOVad | head -1 | cut -d "." -f1)"
 #spit out tif files
-ffmpeg -i $(cat /tmp/HDRMOVad | head -1) -pix_fmt rgb24 %06d.tif
+"$(cat /tmp/Data2.txt)"/ffmpeg -i $(cat /tmp/HDRMOVad | head -1) -pix_fmt rgb24 %06d.tif
 else
 #seems we have tif folders
 cd "$(cat /tmp/HDRMOVad | head -1 | cut -d '/' -f2)"
@@ -535,16 +529,16 @@ then
 
 #enfuse workflow. Needs crop to care for align processing. Roundtrip because of enfuse interpolation causing flicker otherwise
 #output cropped and aligned images
-ffmpeg -i 00001.tiff -pix_fmt rgb24 -vf $crp_fix 00001b.tiff &
-ffmpeg -i 00002.tiff -pix_fmt rgb24 -vf $crp_fix 00002b.tiff &
-ffmpeg -i 0001.tiff -pix_fmt rgb24 -vf $crp_fix 0001b.tiff &
-ffmpeg -i 0002.tiff -pix_fmt rgb24 -vf $crp_fix 0002b.tiff &
-ffmpeg -i 001.tiff -pix_fmt rgb24 -vf $crp_fix 001b.tiff &
-ffmpeg -i 002.tiff -pix_fmt rgb24 -vf $crp_fix 002b.tiff &
-ffmpeg -i 01.tiff -pix_fmt rgb24 -vf $crp_fix 01b.tiff &
-ffmpeg -i 02.tiff -pix_fmt rgb24 -vf $crp_fix 02b.tiff &
-ffmpeg -i 1.tiff -pix_fmt rgb24 -vf $crp_fix 1b.tiff &
-ffmpeg -i 2.tiff -pix_fmt rgb24 -vf $crp_fix 2b.tiff &
+"$(cat /tmp/Data2.txt)"/ffmpeg -i 00001.tiff -pix_fmt rgb24 -vf $crp_fix 00001b.tiff &
+"$(cat /tmp/Data2.txt)"/ffmpeg -i 00002.tiff -pix_fmt rgb24 -vf $crp_fix 00002b.tiff &
+"$(cat /tmp/Data2.txt)"/ffmpeg -i 0001.tiff -pix_fmt rgb24 -vf $crp_fix 0001b.tiff &
+"$(cat /tmp/Data2.txt)"/ffmpeg -i 0002.tiff -pix_fmt rgb24 -vf $crp_fix 0002b.tiff &
+"$(cat /tmp/Data2.txt)"/ffmpeg -i 001.tiff -pix_fmt rgb24 -vf $crp_fix 001b.tiff &
+"$(cat /tmp/Data2.txt)"/ffmpeg -i 002.tiff -pix_fmt rgb24 -vf $crp_fix 002b.tiff &
+"$(cat /tmp/Data2.txt)"/ffmpeg -i 01.tiff -pix_fmt rgb24 -vf $crp_fix 01b.tiff &
+"$(cat /tmp/Data2.txt)"/ffmpeg -i 02.tiff -pix_fmt rgb24 -vf $crp_fix 02b.tiff &
+"$(cat /tmp/Data2.txt)"/ffmpeg -i 1.tiff -pix_fmt rgb24 -vf $crp_fix 1b.tiff &
+"$(cat /tmp/Data2.txt)"/ffmpeg -i 2.tiff -pix_fmt rgb24 -vf $crp_fix 2b.tiff &
 #wait for jobs to end
     wait < <(jobs -p)
 
@@ -563,9 +557,9 @@ fi
 done
 
 #check for audio
-if ! [ x"$(ffmpeg -i $(ls *.{MOV,mov,mp4,MP4,mkv,MKV,avi,AVI} | grep -v 'HDR_' | head -1) 2>&1 | grep Audio)" = x ]
+if ! [ x"$("$(cat /tmp/Data2.txt)"/ffmpeg -i $(ls *.{MOV,mov,mp4,MP4,mkv,MKV,avi,AVI} | grep -v 'HDR_' | head -1) 2>&1 | grep Audio)" = x ]
 then 
-ffmpeg -i $(ls *.{MOV,mov,mp4,MP4,mkv,MKV,avi,AVI} | grep -v 'HDR_' | head -1) -vn -acodec copy $(ls *.{MOV,mov,mp4,MP4,mkv,MKV,avi,AVI} | grep -v 'HDR_' | head -1 | cut -d "." -f1).wav
+"$(cat /tmp/Data2.txt)"/ffmpeg -i $(ls *.{MOV,mov,mp4,MP4,mkv,MKV,avi,AVI} | grep -v 'HDR_' | head -1) -vn -acodec copy $(ls *.{MOV,mov,mp4,MP4,mkv,MKV,avi,AVI} | grep -v 'HDR_' | head -1 | cut -d "." -f1).wav
 wav=$(printf "%s\n" -i $(ls *.{MOV,mov,mp4,MP4,mkv,MKV,avi,AVI} | grep -v 'HDR_' | head -1 | cut -d "." -f1).wav)
 acodec=$(printf "%s\n" -c:v copy -c:a aac)
 fi
@@ -580,11 +574,11 @@ fi
 #check for tif folders
 if ! grep './' /tmp/HDRMOVad
 then
-ffmpeg $wav -r $(exiftool $(ls *.{MOV,mov,mp4,MP4,mkv,MKV,avi,AVI} | grep -v 'HDR_' | head -1) | grep 'Video Frame Rate' | cut -d ":" -f2) -i %06d.tiff $acodec -vcodec prores -pix_fmt yuv422p10le ../HDR_$(cat /tmp/HDRMOVad | head -1 | cut -d "." -f1).mov
+"$(cat /tmp/Data2.txt)"/ffmpeg $wav -r $(exiftool $(ls *.{MOV,mov,mp4,MP4,mkv,MKV,avi,AVI} | grep -v 'HDR_' | head -1) | grep 'Video Frame Rate' | cut -d ":" -f2) -i %06d.tiff $acodec -vcodec prores -pix_fmt yuv422p10le ../HDR_$(cat /tmp/HDRMOVad | head -1 | cut -d "." -f1).mov
 #remove tiff files and HDR mov when done
 rm -r ../$(cat /tmp/HDRMOVad | head -1 | cut -d "." -f1)
 else
-ffmpeg $wav -r $(cat fps) -i "$(cat /tmp/HDRMOVad | head -1 | cut -d '/' -f2 | cut -d "." -f1)"_%06d.tiff $acodec -vcodec prores -pix_fmt yuv422p10le ../HDR_$(cat /tmp/HDRMOVad | head -1 | cut -d '/' -f2 | cut -d "." -f1).mov
+"$(cat /tmp/Data2.txt)"/ffmpeg $wav -r $(cat fps) -i "$(cat /tmp/HDRMOVad | head -1 | cut -d '/' -f2 | cut -d "." -f1)"_%06d.tiff $acodec -vcodec prores -pix_fmt yuv422p10le ../HDR_$(cat /tmp/HDRMOVad | head -1 | cut -d '/' -f2 | cut -d "." -f1).mov
 #remove tiff files when done
 rm -r ../$(cat /tmp/HDRMOVad | head -1 | cut -d '/' -f2 | cut -d "." -f1)
 fi
@@ -706,45 +700,6 @@ then
 clear && echo "exiftool is intalled and ready for use"
 else
 clear && echo "exiftool did not install"
-fi
-sleep 2
-;;
-  n|N ) 
-clear
-;;
-  * ) 
-echo "invalid selection, let´s start again"
-sleep 1
-. /tmp/fps.command
-;;
-esac
-fi
-
-
-#ffmpeg
-if ! [ -f "/usr/local/bin/ffmpeg" ]
-then
-printf '\e[8;16;85t'
-printf '\e[3;410;100t'
-clear
-echo $(tput bold)"
-Checking for ffmpeg, please wait..."
-sleep 2
-read -p $(tput bold)"ffmpeg is not installed would you like to install it?$(tput setaf 1)
-(Y/N)?$(tput sgr0)
-" choice
-case "$choice" in 
-  y|Y ) 
-#!/bin/bash
-clear
-echo "Follow instructions in terminal window"
-sleep 2
-brew install ffmpeg
-if [ -f "/usr/local/bin/ffmpeg" ]
-then
-clear && echo "ffmpeg is intalled and ready for use"
-else
-clear && echo "ffmpeg did not install"
 fi
 sleep 2
 ;;
