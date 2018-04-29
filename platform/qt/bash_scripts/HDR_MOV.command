@@ -23,7 +23,7 @@
 #!/bin/bash
 cd "$(cat /tmp/Data.txt)"
 #log
-echo "$(date)" > HDRMOV_LOG.txt
+echo "$(date)" >> HDRMOV_LOG.txt
 echo "##################HDR_MOV.command#####################" >> HDRMOV_LOG.txt
 echo "More logs to be found in here /tmp/HDRMOV_LOGS" >> HDRMOV_LOG.txt
 echo "" >> HDRMOV_LOG.txt
