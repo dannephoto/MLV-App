@@ -23,6 +23,7 @@
 #!/bin/bash
 cd "$(cat /tmp/Data.txt)"
 #log
+rm "$(cat /tmp/Data.txt)"/HDRMOV_LOG.txt
 echo "$(date)" >> HDRMOV_LOG.txt
 echo "##################HDR_MOV.command#####################" >> HDRMOV_LOG.txt
 echo "More logs to be found in here /tmp/HDRMOV_LOGS" >> HDRMOV_LOG.txt
@@ -722,7 +723,6 @@ chmod u=rwx /tmp/HDR_script2.command
 chmod u=rwx /tmp/HDR_script3.command
 
 #add log structure
-rm "$(cat /tmp/Data.txt)"/HDRMOV_LOG.txt
 rm -r /tmp/HDRMOV_LOGS
 mkdir /tmp/HDRMOV_LOGS
 
