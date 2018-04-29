@@ -22,11 +22,11 @@
 
 #!/bin/bash
 cd "$(cat /tmp/Data.txt)"
-rm HDRMOV_LOG.txt
-rm -r /tmp/HDRMOVlogs
 #log
 echo "$(date)" > HDRMOV_LOG.txt
 echo "##################HDR_MOV.command#####################" >> HDRMOV_LOG.txt
+echo "More logs to be found in here /tmp/HDRMOV_LOGS" >> HDRMOV_LOG.txt
+echo "" >> HDRMOV_LOG.txt
 echo "###Checking for paths###" >> HDRMOV_LOG.txt
 echo outputpath: "$(cat /tmp/Data.txt)" >> HDRMOV_LOG.txt
 echo applicationpath: "$(cat /tmp/Data2.txt)" >> HDRMOV_LOG.txt
@@ -179,14 +179,16 @@ acodec=$(printf "%s\n" -c:v copy -c:a aac)
 fi
 
 #output to prores
+echo "" >> HDRMOV_LOG.txt
+echo "##################ffmpeg output script#####################" >> HDRMOV_LOG.txt
 #check for tif folders
 if ! grep './' /tmp/HDRMOVaa
 then
-"$(cat /tmp/Data2.txt)"/ffmpeg $wav -r $(exiftool $(ls *.{MOV,mov,mp4,MP4,mkv,MKV,avi,AVI} | grep -v 'HDR_' | head -1) | grep 'Video Frame Rate' | cut -d ":" -f2) -i %06d.tiff $acodec -vcodec prores -pix_fmt yuv422p10le ../HDR_$(cat /tmp/HDRMOVaa | head -1 | cut -d "." -f1).mov
+"$(cat /tmp/Data2.txt)"/ffmpeg $wav -r $(exiftool $(ls *.{MOV,mov,mp4,MP4,mkv,MKV,avi,AVI} | grep -v 'HDR_' | head -1) | grep 'Video Frame Rate' | cut -d ":" -f2) -i %06d.tiff $acodec -vcodec prores -pix_fmt yuv422p10le ../HDR_$(cat /tmp/HDRMOVaa | head -1 | cut -d "." -f1).mov 2>> "$(cat /tmp/Data.txt)"/HDRMOV_LOG.txt
 #remove tiff files and HDR mov when done
 rm -r ../$(cat /tmp/HDRMOVaa | head -1 | cut -d "." -f1)
 else
-"$(cat /tmp/Data2.txt)"/ffmpeg $wav -r $(cat fps) -i "$(cat /tmp/HDRMOVaa | head -1 | cut -d '/' -f2 | cut -d "." -f1)"_%06d.tiff $acodec -vcodec prores -pix_fmt yuv422p10le ../HDR_$(cat /tmp/HDRMOVaa | head -1 | cut -d '/' -f2 | cut -d "." -f1).mov
+"$(cat /tmp/Data2.txt)"/ffmpeg $wav -r $(cat fps) -i "$(cat /tmp/HDRMOVaa | head -1 | cut -d '/' -f2 | cut -d "." -f1)"_%06d.tiff $acodec -vcodec prores -pix_fmt yuv422p10le ../HDR_$(cat /tmp/HDRMOVaa | head -1 | cut -d '/' -f2 | cut -d "." -f1).mov 2>> "$(cat /tmp/Data.txt)"/HDRMOV_LOG.txt
 #remove tiff files when done
 rm -r ../$(cat /tmp/HDRMOVaa | head -1 | cut -d '/' -f2 | cut -d "." -f1)
 fi
@@ -211,9 +213,7 @@ cat <<'EOF' > /tmp/HDR_script1.command
 cd "$(cat /tmp/Data.txt)"
 
 #log
-#extra logs sent to /tmp/logs/folder
-mkdir -p /tmp/HDRMOVlogs/
-echo "##################HDR_script1.command#####################" > /tmp/HDRMOVlogs/HDR_script1.txt
+echo "##################HDR_script1.command#####################" >> /tmp/HDRMOV_LOGS/HDR_script1_LOG.txt
 #run the log file
 
 while grep 'MOV\|mov\|mp4\|MP4\|mkv\|MKV\|avi\|AVI\|./' /tmp/HDRMOVab; do
@@ -309,14 +309,16 @@ acodec=$(printf "%s\n" -c:v copy -c:a aac)
 fi
 
 #output to prores
+echo "" >> /tmp/HDRMOV_LOGS/HDR_script1_LOG.txt
+echo "##################ffmpeg output script1#####################" >> /tmp/HDRMOV_LOGS/HDR_script1_LOG.txt
 #check for tif folders
 if ! grep './' /tmp/HDRMOVab
 then
-"$(cat /tmp/Data2.txt)"/ffmpeg $wav -r $(exiftool $(ls *.{MOV,mov,mp4,MP4,mkv,MKV,avi,AVI} | grep -v 'HDR_' | head -1) | grep 'Video Frame Rate' | cut -d ":" -f2) -i %06d.tiff $acodec -vcodec prores -pix_fmt yuv422p10le ../HDR_$(cat /tmp/HDRMOVab | head -1 | cut -d "." -f1).mov
+"$(cat /tmp/Data2.txt)"/ffmpeg $wav -r $(exiftool $(ls *.{MOV,mov,mp4,MP4,mkv,MKV,avi,AVI} | grep -v 'HDR_' | head -1) | grep 'Video Frame Rate' | cut -d ":" -f2) -i %06d.tiff $acodec -vcodec prores -pix_fmt yuv422p10le ../HDR_$(cat /tmp/HDRMOVab | head -1 | cut -d "." -f1).mov 2>> /tmp/HDRMOV_LOGS/HDR_script1_LOG.txt
 #remove tiff files and HDR mov when done
 rm -r ../$(cat /tmp/HDRMOVab | head -1 | cut -d "." -f1)
 else
-"$(cat /tmp/Data2.txt)"/ffmpeg $wav -r $(cat fps) -i "$(cat /tmp/HDRMOVab | head -1 | cut -d '/' -f2 | cut -d "." -f1)"_%06d.tiff $acodec -vcodec prores -pix_fmt yuv422p10le ../HDR_$(cat /tmp/HDRMOVab | head -1 | cut -d '/' -f2 | cut -d "." -f1).mov
+"$(cat /tmp/Data2.txt)"/ffmpeg $wav -r $(cat fps) -i "$(cat /tmp/HDRMOVab | head -1 | cut -d '/' -f2 | cut -d "." -f1)"_%06d.tiff $acodec -vcodec prores -pix_fmt yuv422p10le ../HDR_$(cat /tmp/HDRMOVab | head -1 | cut -d '/' -f2 | cut -d "." -f1).mov 2>> /tmp/HDRMOV_LOGS/HDR_script1_LOG.txt
 #remove tiff files when done
 rm -r ../$(cat /tmp/HDRMOVab | head -1 | cut -d '/' -f2 | cut -d "." -f1)
 fi
@@ -341,9 +343,7 @@ cat <<'EOF' > /tmp/HDR_script2.command
 cd "$(cat /tmp/Data.txt)"
 
 #log
-#extra logs sent to /tmp/logs/folder
-mkdir -p /tmp/HDRMOVlogs/
-echo "##################HDR_script2.command#####################" > /tmp/HDRMOVlogs/HDR_script2.txt
+echo "##################HDR_script2.command#####################" >> /tmp/HDRMOV_LOGS/HDR_script2_LOG.txt
 #run the log file
 
 while grep 'MOV\|mov\|mp4\|MP4\|mkv\|MKV\|avi\|AVI\|./' /tmp/HDRMOVac; do
@@ -440,14 +440,16 @@ acodec=$(printf "%s\n" -c:v copy -c:a aac)
 fi
 
 #output to prores
+echo "" >> /tmp/HDRMOV_LOGS/HDR_script2_LOG.txt
+echo "##################ffmpeg output script2#####################" >> /tmp/HDRMOV_LOGS/HDR_script2_LOG.txt
 #check for tif folders
 if ! grep './' /tmp/HDRMOVac
 then
-"$(cat /tmp/Data2.txt)"/ffmpeg $wav -r $(exiftool $(ls *.{MOV,mov,mp4,MP4,mkv,MKV,avi,AVI} | grep -v 'HDR_' | head -1) | grep 'Video Frame Rate' | cut -d ":" -f2) -i %06d.tiff $acodec -vcodec prores -pix_fmt yuv422p10le ../HDR_$(cat /tmp/HDRMOVac | head -1 | cut -d "." -f1).mov
+"$(cat /tmp/Data2.txt)"/ffmpeg $wav -r $(exiftool $(ls *.{MOV,mov,mp4,MP4,mkv,MKV,avi,AVI} | grep -v 'HDR_' | head -1) | grep 'Video Frame Rate' | cut -d ":" -f2) -i %06d.tiff $acodec -vcodec prores -pix_fmt yuv422p10le ../HDR_$(cat /tmp/HDRMOVac | head -1 | cut -d "." -f1).mov 2>> /tmp/HDRMOV_LOGS/HDR_script2_LOG.txt
 #remove tiff files and HDR mov when done
 rm -r ../$(cat /tmp/HDRMOVac | head -1 | cut -d "." -f1)
 else
-"$(cat /tmp/Data2.txt)"/ffmpeg $wav -r $(cat fps) -i "$(cat /tmp/HDRMOVac | head -1 | cut -d '/' -f2 | cut -d "." -f1)"_%06d.tiff $acodec -vcodec prores -pix_fmt yuv422p10le ../HDR_$(cat /tmp/HDRMOVac | head -1 | cut -d '/' -f2 | cut -d "." -f1).mov
+"$(cat /tmp/Data2.txt)"/ffmpeg $wav -r $(cat fps) -i "$(cat /tmp/HDRMOVac | head -1 | cut -d '/' -f2 | cut -d "." -f1)"_%06d.tiff $acodec -vcodec prores -pix_fmt yuv422p10le ../HDR_$(cat /tmp/HDRMOVac | head -1 | cut -d '/' -f2 | cut -d "." -f1).mov 2>> /tmp/HDRMOV_LOGS/HDR_script2_LOG.txt
 #remove tiff files when done
 rm -r ../$(cat /tmp/HDRMOVac | head -1 | cut -d '/' -f2 | cut -d "." -f1)
 fi
@@ -471,9 +473,7 @@ cat <<'EOF' > /tmp/HDR_script3.command
 cd "$(cat /tmp/Data.txt)"
 
 #log
-#extra logs sent to /tmp/logs/folder
-mkdir -p /tmp/HDRMOVlogs/
-echo "##################HDR_script3.command#####################" > /tmp/HDRMOVlogs/HDR_script3.txt
+echo "##################HDR_script3.command#####################" >> /tmp/HDRMOV_LOGS/HDR_script3_LOG.txt
 #run the log file
 
 while grep 'MOV\|mov\|mp4\|MP4\|mkv\|MKV\|avi\|AVI\|./' /tmp/HDRMOVad; do
@@ -571,14 +571,16 @@ acodec=$(printf "%s\n" -c:v copy -c:a aac)
 fi
 
 #output to prores
+echo "" >> /tmp/HDRMOV_LOGS/HDR_script3_LOG.txt
+echo "##################ffmpeg output script3#####################" >> /tmp/HDRMOV_LOGS/HDR_script3_LOG.txt
 #check for tif folders
 if ! grep './' /tmp/HDRMOVad
 then
-"$(cat /tmp/Data2.txt)"/ffmpeg $wav -r $(exiftool $(ls *.{MOV,mov,mp4,MP4,mkv,MKV,avi,AVI} | grep -v 'HDR_' | head -1) | grep 'Video Frame Rate' | cut -d ":" -f2) -i %06d.tiff $acodec -vcodec prores -pix_fmt yuv422p10le ../HDR_$(cat /tmp/HDRMOVad | head -1 | cut -d "." -f1).mov
+"$(cat /tmp/Data2.txt)"/ffmpeg $wav -r $(exiftool $(ls *.{MOV,mov,mp4,MP4,mkv,MKV,avi,AVI} | grep -v 'HDR_' | head -1) | grep 'Video Frame Rate' | cut -d ":" -f2) -i %06d.tiff $acodec -vcodec prores -pix_fmt yuv422p10le ../HDR_$(cat /tmp/HDRMOVad | head -1 | cut -d "." -f1).mov 2>> /tmp/HDRMOV_LOGS/HDR_script3_LOG.txt
 #remove tiff files and HDR mov when done
 rm -r ../$(cat /tmp/HDRMOVad | head -1 | cut -d "." -f1)
 else
-"$(cat /tmp/Data2.txt)"/ffmpeg $wav -r $(cat fps) -i "$(cat /tmp/HDRMOVad | head -1 | cut -d '/' -f2 | cut -d "." -f1)"_%06d.tiff $acodec -vcodec prores -pix_fmt yuv422p10le ../HDR_$(cat /tmp/HDRMOVad | head -1 | cut -d '/' -f2 | cut -d "." -f1).mov
+"$(cat /tmp/Data2.txt)"/ffmpeg $wav -r $(cat fps) -i "$(cat /tmp/HDRMOVad | head -1 | cut -d '/' -f2 | cut -d "." -f1)"_%06d.tiff $acodec -vcodec prores -pix_fmt yuv422p10le ../HDR_$(cat /tmp/HDRMOVad | head -1 | cut -d '/' -f2 | cut -d "." -f1).mov 2>> /tmp/HDRMOV_LOGS/HDR_script3_LOG.txt
 #remove tiff files when done
 rm -r ../$(cat /tmp/HDRMOVad | head -1 | cut -d '/' -f2 | cut -d "." -f1)
 fi
@@ -600,7 +602,7 @@ cat <<'EOF' > /tmp/fps.command
 #!/bin/bash
 cd "$(cat /tmp/Data.txt)"
 
-echo "##################fps.command#####################" >> HDRMOV_LOG.txt
+echo "##################fps.command#####################" >> /tmp/HDRMOV_LOGS/HDR_fps_LOG.txt
 #run the log file
 
 ###########dependencies############
@@ -719,10 +721,15 @@ chmod u=rwx /tmp/HDR_script1.command
 chmod u=rwx /tmp/HDR_script2.command
 chmod u=rwx /tmp/HDR_script3.command
 
-sleep 1 && . /tmp/HDR_script.command &
-sleep 1 && . /tmp/HDR_script1.command &
-sleep 1 && . /tmp/HDR_script2.command &
-sleep 1 && . /tmp/HDR_script3.command &
+#add log structure
+rm "$(cat /tmp/Data.txt)"/HDRMOV_LOG.txt
+rm -r /tmp/HDRMOV_LOGS
+mkdir /tmp/HDRMOV_LOGS
+
+sleep 1 && . /tmp/HDR_script.command | tee -a "$(cat /tmp/Data.txt)"/HDRMOV_LOG.txt &
+sleep 1 && . /tmp/HDR_script1.command | tee -a /tmp/HDRMOV_LOGS/HDR_script1_LOG.txt &
+sleep 1 && . /tmp/HDR_script2.command | tee -a /tmp/HDRMOV_LOGS/HDR_script2_LOG.txt &
+sleep 1 && . /tmp/HDR_script3.command | tee -a /tmp/HDRMOV_LOGS/HDR_script3_LOG.txt &
 
 sleep 1 && rm /tmp/fps.command & echo -n -e "\033]0;fps\007" && osascript -e 'tell application "Terminal" to close (every window whose name contains "fps")' & exit
 
@@ -794,7 +801,7 @@ EOF
 chmod u=rwx /tmp/fps.command
 chmod u=rwx /tmp/progress_bar.command
 chmod u=rwx "$(cat /tmp/Data2.txt | tr -d '"' )"/HDR_MOV.command
-sleep 0.2 && open /tmp/fps.command &
+sleep 0.2 && open /tmp/fps.command
 
 #kill ongoing command
 echo -n -e "\033]0;HDR_script\007" && osascript -e 'tell application "Terminal" to close (every window whose name contains "HDR_script")' & exit
