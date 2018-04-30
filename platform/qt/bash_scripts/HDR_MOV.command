@@ -106,11 +106,11 @@ fi
 #check for tif folders
 if ! grep './' /tmp/HDRMOVaa
 then
-cr_W=$(echo $(exiftool $(cat /tmp/HDRMOVaa | head -1) | awk '/Image Size/ { print $4,$5; exit }' | cut -d ":" -f2 | cut -d "x" -f1 ))
-cr_H=$(echo $(exiftool $(cat /tmp/HDRMOVaa | head -1) | awk '/Image Size/ { print $4,$5; exit }' | cut -d ":" -f2 | cut -d "x" -f2 ))
+cr_W=$(echo $(/usr/local/bin/exiftool $(cat /tmp/HDRMOVaa | head -1) | awk '/Image Size/ { print $4,$5; exit }' | cut -d ":" -f2 | cut -d "x" -f1 ))
+cr_H=$(echo $(/usr/local/bin/exiftool $(cat /tmp/HDRMOVaa | head -1) | awk '/Image Size/ { print $4,$5; exit }' | cut -d ":" -f2 | cut -d "x" -f2 ))
 else
-cr_W=$(echo $(exiftool $(echo *_000000.tif) | awk '/Image Size/ { print $4,$5; exit }' | cut -d ":" -f2 | cut -d "x" -f1 ))
-cr_H=$(echo $(exiftool $(echo *_000000.tif) | awk '/Image Size/ { print $4,$5; exit }' | cut -d ":" -f2 | cut -d "x" -f2 ))
+cr_W=$(echo $(/usr/local/bin/exiftool $(echo *_000000.tif) | awk '/Image Size/ { print $4,$5; exit }' | cut -d ":" -f2 | cut -d "x" -f1 ))
+cr_H=$(echo $(/usr/local/bin/exiftool $(echo *_000000.tif) | awk '/Image Size/ { print $4,$5; exit }' | cut -d ":" -f2 | cut -d "x" -f2 ))
 fi
 cr_Ws=$(echo $cr_W*0.98 | bc -l | cut -d "." -f1)
 cr_Hs=$(echo $cr_H*0.98 | bc -l | cut -d "." -f1)
@@ -120,15 +120,15 @@ crp_fix=$(echo crop=$cr_Ws:$cr_Hs,scale=$cr_W:$cr_H)
 while grep -E "tif" <<< $(find . -maxdepth 1 -iname '*.tif')
 do
 #align images and rename
-/Applications/Hugin/Hugin.app/Contents/MacOS/align_image_stack -a aligned.tif $(find -s . -maxdepth 1 -iname '*.tif' | awk 'FNR == 1') $(find -s . -maxdepth 1 -iname '*.tif' | awk 'FNR == 2') && mv aligned.tif0000.tif 1.tiff && mv aligned.tif0001.tif 2.tiff & pid1=$!
+/Applications/Hugin/Hugin.app/Contents/MacOS/align_image_stack -a aligned.tif $(find -s . -maxdepth 1 -iname '*.tif' | awk 'FNR == 1') $(find -s . -maxdepth 1 -iname '*.tif' | awk 'FNR == 2') && mv aligned.tif0000.tif 1.tiff && mv aligned.tif0001.tif 2.tiff &
 
-/Applications/Hugin/Hugin.app/Contents/MacOS/align_image_stack -a aligned2.tif $(find -s . -maxdepth 1 -iname '*.tif' | awk 'FNR == 2') $(find -s . -maxdepth 1 -iname '*.tif' | awk 'FNR == 3') && mv aligned2.tif0000.tif 01.tiff && mv aligned2.tif0001.tif 02.tiff & pid2=$!
+/Applications/Hugin/Hugin.app/Contents/MacOS/align_image_stack -a aligned2.tif $(find -s . -maxdepth 1 -iname '*.tif' | awk 'FNR == 2') $(find -s . -maxdepth 1 -iname '*.tif' | awk 'FNR == 3') && mv aligned2.tif0000.tif 01.tiff && mv aligned2.tif0001.tif 02.tiff & 
 
-/Applications/Hugin/Hugin.app/Contents/MacOS/align_image_stack -a aligned3.tif $(find -s . -maxdepth 1 -iname '*.tif' | awk 'FNR == 3') $(find -s . -maxdepth 1 -iname '*.tif' | awk 'FNR == 4') && mv aligned3.tif0000.tif 001.tiff && mv aligned3.tif0001.tif 002.tiff & pid3=$!
+/Applications/Hugin/Hugin.app/Contents/MacOS/align_image_stack -a aligned3.tif $(find -s . -maxdepth 1 -iname '*.tif' | awk 'FNR == 3') $(find -s . -maxdepth 1 -iname '*.tif' | awk 'FNR == 4') && mv aligned3.tif0000.tif 001.tiff && mv aligned3.tif0001.tif 002.tiff &
 
-/Applications/Hugin/Hugin.app/Contents/MacOS/align_image_stack -a aligned4.tif $(find -s . -maxdepth 1 -iname '*.tif' | awk 'FNR == 4') $(find -s . -maxdepth 1 -iname '*.tif' | awk 'FNR == 5') && mv aligned4.tif0000.tif 0001.tiff && mv aligned4.tif0001.tif 0002.tiff & pid4=$!
+/Applications/Hugin/Hugin.app/Contents/MacOS/align_image_stack -a aligned4.tif $(find -s . -maxdepth 1 -iname '*.tif' | awk 'FNR == 4') $(find -s . -maxdepth 1 -iname '*.tif' | awk 'FNR == 5') && mv aligned4.tif0000.tif 0001.tiff && mv aligned4.tif0001.tif 0002.tiff & 
 
-/Applications/Hugin/Hugin.app/Contents/MacOS/align_image_stack -a aligned5.tif $(find -s . -maxdepth 1 -iname '*.tif' | awk 'FNR == 5') $(find -s . -maxdepth 1 -iname '*.tif' | awk 'FNR == 6') && mv aligned5.tif0000.tif 00001.tiff && mv aligned5.tif0001.tif 00002.tiff & pid5=$!
+/Applications/Hugin/Hugin.app/Contents/MacOS/align_image_stack -a aligned5.tif $(find -s . -maxdepth 1 -iname '*.tif' | awk 'FNR == 5') $(find -s . -maxdepth 1 -iname '*.tif' | awk 'FNR == 6') && mv aligned5.tif0000.tif 00001.tiff && mv aligned5.tif0001.tif 00002.tiff & 
 
 #wait for jobs to end
     wait < <(jobs -p)
@@ -185,7 +185,7 @@ echo "##################ffmpeg output script#####################" >> HDRMOV_LOG
 #check for tif folders
 if ! grep './' /tmp/HDRMOVaa
 then
-"$(cat /tmp/Data2.txt)"/ffmpeg $wav -r $(exiftool $(ls *.{MOV,mov,mp4,MP4,mkv,MKV,avi,AVI} | grep -v 'HDR_' | head -1) | grep 'Video Frame Rate' | cut -d ":" -f2) -i %06d.tiff $acodec -vcodec prores -pix_fmt yuv422p10le ../HDR_$(cat /tmp/HDRMOVaa | head -1 | cut -d "." -f1).mov 2>> "$(cat /tmp/Data.txt)"/HDRMOV_LOG.txt
+"$(cat /tmp/Data2.txt)"/ffmpeg $wav -r $(/usr/local/bin/exiftool $(ls *.{MOV,mov,mp4,MP4,mkv,MKV,avi,AVI} | grep -v 'HDR_' | head -1) | grep 'Video Frame Rate' | cut -d ":" -f2) -i %06d.tiff $acodec -vcodec prores -pix_fmt yuv422p10le ../HDR_$(cat /tmp/HDRMOVaa | head -1 | cut -d "." -f1).mov 2>> "$(cat /tmp/Data.txt)"/HDRMOV_LOG.txt
 #remove tiff files and HDR mov when done
 rm -r ../$(cat /tmp/HDRMOVaa | head -1 | cut -d "." -f1)
 else
@@ -235,11 +235,11 @@ fi
 #check for tif folders
 if ! grep './' /tmp/HDRMOVab
 then
-cr_W=$(echo $(exiftool $(cat /tmp/HDRMOVab | head -1) | awk '/Image Size/ { print $4,$5; exit }' | cut -d ":" -f2 | cut -d "x" -f1 ))
-cr_H=$(echo $(exiftool $(cat /tmp/HDRMOVab | head -1) | awk '/Image Size/ { print $4,$5; exit }' | cut -d ":" -f2 | cut -d "x" -f2 ))
+cr_W=$(echo $(/usr/local/bin/exiftool $(cat /tmp/HDRMOVab | head -1) | awk '/Image Size/ { print $4,$5; exit }' | cut -d ":" -f2 | cut -d "x" -f1 ))
+cr_H=$(echo $(/usr/local/bin/exiftool $(cat /tmp/HDRMOVab | head -1) | awk '/Image Size/ { print $4,$5; exit }' | cut -d ":" -f2 | cut -d "x" -f2 ))
 else
-cr_W=$(echo $(exiftool $(echo *_000000.tif) | awk '/Image Size/ { print $4,$5; exit }' | cut -d ":" -f2 | cut -d "x" -f1 ))
-cr_H=$(echo $(exiftool $(echo *_000000.tif) | awk '/Image Size/ { print $4,$5; exit }' | cut -d ":" -f2 | cut -d "x" -f2 ))
+cr_W=$(echo $(/usr/local/bin/exiftool $(echo *_000000.tif) | awk '/Image Size/ { print $4,$5; exit }' | cut -d ":" -f2 | cut -d "x" -f1 ))
+cr_H=$(echo $(/usr/local/bin/exiftool $(echo *_000000.tif) | awk '/Image Size/ { print $4,$5; exit }' | cut -d ":" -f2 | cut -d "x" -f2 ))
 fi
 cr_Ws=$(echo $cr_W*0.98 | bc -l | cut -d "." -f1)
 cr_Hs=$(echo $cr_H*0.98 | bc -l | cut -d "." -f1)
@@ -250,15 +250,15 @@ crp_fix=$(echo crop=$cr_Ws:$cr_Hs,scale=$cr_W:$cr_H)
 while grep -E "tif" <<< $(find . -maxdepth 1 -iname '*.tif')
 do
 #align images and rename
-/Applications/Hugin/Hugin.app/Contents/MacOS/align_image_stack -a aligned.tif $(find -s . -maxdepth 1 -iname '*.tif' | awk 'FNR == 1') $(find -s . -maxdepth 1 -iname '*.tif' | awk 'FNR == 2') && mv aligned.tif0000.tif 1.tiff && mv aligned.tif0001.tif 2.tiff & pid1=$!
+/Applications/Hugin/Hugin.app/Contents/MacOS/align_image_stack -a aligned.tif $(find -s . -maxdepth 1 -iname '*.tif' | awk 'FNR == 1') $(find -s . -maxdepth 1 -iname '*.tif' | awk 'FNR == 2') && mv aligned.tif0000.tif 1.tiff && mv aligned.tif0001.tif 2.tiff &
 
-/Applications/Hugin/Hugin.app/Contents/MacOS/align_image_stack -a aligned2.tif $(find -s . -maxdepth 1 -iname '*.tif' | awk 'FNR == 2') $(find -s . -maxdepth 1 -iname '*.tif' | awk 'FNR == 3') && mv aligned2.tif0000.tif 01.tiff && mv aligned2.tif0001.tif 02.tiff & pid2=$!
+/Applications/Hugin/Hugin.app/Contents/MacOS/align_image_stack -a aligned2.tif $(find -s . -maxdepth 1 -iname '*.tif' | awk 'FNR == 2') $(find -s . -maxdepth 1 -iname '*.tif' | awk 'FNR == 3') && mv aligned2.tif0000.tif 01.tiff && mv aligned2.tif0001.tif 02.tiff &
 
-/Applications/Hugin/Hugin.app/Contents/MacOS/align_image_stack -a aligned3.tif $(find -s . -maxdepth 1 -iname '*.tif' | awk 'FNR == 3') $(find -s . -maxdepth 1 -iname '*.tif' | awk 'FNR == 4') && mv aligned3.tif0000.tif 001.tiff && mv aligned3.tif0001.tif 002.tiff & pid3=$!
+/Applications/Hugin/Hugin.app/Contents/MacOS/align_image_stack -a aligned3.tif $(find -s . -maxdepth 1 -iname '*.tif' | awk 'FNR == 3') $(find -s . -maxdepth 1 -iname '*.tif' | awk 'FNR == 4') && mv aligned3.tif0000.tif 001.tiff && mv aligned3.tif0001.tif 002.tiff &
 
-/Applications/Hugin/Hugin.app/Contents/MacOS/align_image_stack -a aligned4.tif $(find -s . -maxdepth 1 -iname '*.tif' | awk 'FNR == 4') $(find -s . -maxdepth 1 -iname '*.tif' | awk 'FNR == 5') && mv aligned4.tif0000.tif 0001.tiff && mv aligned4.tif0001.tif 0002.tiff & pid4=$!
+/Applications/Hugin/Hugin.app/Contents/MacOS/align_image_stack -a aligned4.tif $(find -s . -maxdepth 1 -iname '*.tif' | awk 'FNR == 4') $(find -s . -maxdepth 1 -iname '*.tif' | awk 'FNR == 5') && mv aligned4.tif0000.tif 0001.tiff && mv aligned4.tif0001.tif 0002.tiff &
 
-/Applications/Hugin/Hugin.app/Contents/MacOS/align_image_stack -a aligned5.tif $(find -s . -maxdepth 1 -iname '*.tif' | awk 'FNR == 5') $(find -s . -maxdepth 1 -iname '*.tif' | awk 'FNR == 6') && mv aligned5.tif0000.tif 00001.tiff && mv aligned5.tif0001.tif 00002.tiff & pid5=$!
+/Applications/Hugin/Hugin.app/Contents/MacOS/align_image_stack -a aligned5.tif $(find -s . -maxdepth 1 -iname '*.tif' | awk 'FNR == 5') $(find -s . -maxdepth 1 -iname '*.tif' | awk 'FNR == 6') && mv aligned5.tif0000.tif 00001.tiff && mv aligned5.tif0001.tif 00002.tiff &
 
 #wait for jobs to end
     wait < <(jobs -p)
@@ -315,7 +315,7 @@ echo "##################ffmpeg output script1#####################" >> /tmp/HDRM
 #check for tif folders
 if ! grep './' /tmp/HDRMOVab
 then
-"$(cat /tmp/Data2.txt)"/ffmpeg $wav -r $(exiftool $(ls *.{MOV,mov,mp4,MP4,mkv,MKV,avi,AVI} | grep -v 'HDR_' | head -1) | grep 'Video Frame Rate' | cut -d ":" -f2) -i %06d.tiff $acodec -vcodec prores -pix_fmt yuv422p10le ../HDR_$(cat /tmp/HDRMOVab | head -1 | cut -d "." -f1).mov 2>> /tmp/HDRMOV_LOGS/HDR_script1_LOG.txt
+"$(cat /tmp/Data2.txt)"/ffmpeg $wav -r $(/usr/local/bin/exiftool $(ls *.{MOV,mov,mp4,MP4,mkv,MKV,avi,AVI} | grep -v 'HDR_' | head -1) | grep 'Video Frame Rate' | cut -d ":" -f2) -i %06d.tiff $acodec -vcodec prores -pix_fmt yuv422p10le ../HDR_$(cat /tmp/HDRMOVab | head -1 | cut -d "." -f1).mov 2>> /tmp/HDRMOV_LOGS/HDR_script1_LOG.txt
 #remove tiff files and HDR mov when done
 rm -r ../$(cat /tmp/HDRMOVab | head -1 | cut -d "." -f1)
 else
@@ -365,11 +365,11 @@ fi
 #check for tif folders
 if ! grep './' /tmp/HDRMOVac
 then
-cr_W=$(echo $(exiftool $(cat /tmp/HDRMOVac | head -1) | awk '/Image Size/ { print $4,$5; exit }' | cut -d ":" -f2 | cut -d "x" -f1 ))
-cr_H=$(echo $(exiftool $(cat /tmp/HDRMOVac | head -1) | awk '/Image Size/ { print $4,$5; exit }' | cut -d ":" -f2 | cut -d "x" -f2 ))
+cr_W=$(echo $(/usr/local/bin/exiftool $(cat /tmp/HDRMOVac | head -1) | awk '/Image Size/ { print $4,$5; exit }' | cut -d ":" -f2 | cut -d "x" -f1 ))
+cr_H=$(echo $(/usr/local/bin/exiftool $(cat /tmp/HDRMOVac | head -1) | awk '/Image Size/ { print $4,$5; exit }' | cut -d ":" -f2 | cut -d "x" -f2 ))
 else
-cr_W=$(echo $(exiftool $(echo *_000000.tif) | awk '/Image Size/ { print $4,$5; exit }' | cut -d ":" -f2 | cut -d "x" -f1 ))
-cr_H=$(echo $(exiftool $(echo *_000000.tif) | awk '/Image Size/ { print $4,$5; exit }' | cut -d ":" -f2 | cut -d "x" -f2 ))
+cr_W=$(echo $(/usr/local/bin/exiftool $(echo *_000000.tif) | awk '/Image Size/ { print $4,$5; exit }' | cut -d ":" -f2 | cut -d "x" -f1 ))
+cr_H=$(echo $(/usr/local/bin/exiftool $(echo *_000000.tif) | awk '/Image Size/ { print $4,$5; exit }' | cut -d ":" -f2 | cut -d "x" -f2 ))
 fi
 cr_Ws=$(echo $cr_W*0.98 | bc -l | cut -d "." -f1)
 cr_Hs=$(echo $cr_H*0.98 | bc -l | cut -d "." -f1)
@@ -381,15 +381,15 @@ while grep -E "tif" <<< $(find . -maxdepth 1 -iname '*.tif')
 do
 
 #align images and rename
-/Applications/Hugin/Hugin.app/Contents/MacOS/align_image_stack -a aligned.tif $(find -s . -maxdepth 1 -iname '*.tif' | awk 'FNR == 1') $(find -s . -maxdepth 1 -iname '*.tif' | awk 'FNR == 2') && mv aligned.tif0000.tif 1.tiff && mv aligned.tif0001.tif 2.tiff & pid1=$!
+/Applications/Hugin/Hugin.app/Contents/MacOS/align_image_stack -a aligned.tif $(find -s . -maxdepth 1 -iname '*.tif' | awk 'FNR == 1') $(find -s . -maxdepth 1 -iname '*.tif' | awk 'FNR == 2') && mv aligned.tif0000.tif 1.tiff && mv aligned.tif0001.tif 2.tiff &
 
-/Applications/Hugin/Hugin.app/Contents/MacOS/align_image_stack -a aligned2.tif $(find -s . -maxdepth 1 -iname '*.tif' | awk 'FNR == 2') $(find -s . -maxdepth 1 -iname '*.tif' | awk 'FNR == 3') && mv aligned2.tif0000.tif 01.tiff && mv aligned2.tif0001.tif 02.tiff & pid2=$!
+/Applications/Hugin/Hugin.app/Contents/MacOS/align_image_stack -a aligned2.tif $(find -s . -maxdepth 1 -iname '*.tif' | awk 'FNR == 2') $(find -s . -maxdepth 1 -iname '*.tif' | awk 'FNR == 3') && mv aligned2.tif0000.tif 01.tiff && mv aligned2.tif0001.tif 02.tiff &
 
-/Applications/Hugin/Hugin.app/Contents/MacOS/align_image_stack -a aligned3.tif $(find -s . -maxdepth 1 -iname '*.tif' | awk 'FNR == 3') $(find -s . -maxdepth 1 -iname '*.tif' | awk 'FNR == 4') && mv aligned3.tif0000.tif 001.tiff && mv aligned3.tif0001.tif 002.tiff & pid3=$!
+/Applications/Hugin/Hugin.app/Contents/MacOS/align_image_stack -a aligned3.tif $(find -s . -maxdepth 1 -iname '*.tif' | awk 'FNR == 3') $(find -s . -maxdepth 1 -iname '*.tif' | awk 'FNR == 4') && mv aligned3.tif0000.tif 001.tiff && mv aligned3.tif0001.tif 002.tiff &
 
-/Applications/Hugin/Hugin.app/Contents/MacOS/align_image_stack -a aligned4.tif $(find -s . -maxdepth 1 -iname '*.tif' | awk 'FNR == 4') $(find -s . -maxdepth 1 -iname '*.tif' | awk 'FNR == 5') && mv aligned4.tif0000.tif 0001.tiff && mv aligned4.tif0001.tif 0002.tiff & pid4=$!
+/Applications/Hugin/Hugin.app/Contents/MacOS/align_image_stack -a aligned4.tif $(find -s . -maxdepth 1 -iname '*.tif' | awk 'FNR == 4') $(find -s . -maxdepth 1 -iname '*.tif' | awk 'FNR == 5') && mv aligned4.tif0000.tif 0001.tiff && mv aligned4.tif0001.tif 0002.tiff &
 
-/Applications/Hugin/Hugin.app/Contents/MacOS/align_image_stack -a aligned5.tif $(find -s . -maxdepth 1 -iname '*.tif' | awk 'FNR == 5') $(find -s . -maxdepth 1 -iname '*.tif' | awk 'FNR == 6') && mv aligned5.tif0000.tif 00001.tiff && mv aligned5.tif0001.tif 00002.tiff & pid5=$!
+/Applications/Hugin/Hugin.app/Contents/MacOS/align_image_stack -a aligned5.tif $(find -s . -maxdepth 1 -iname '*.tif' | awk 'FNR == 5') $(find -s . -maxdepth 1 -iname '*.tif' | awk 'FNR == 6') && mv aligned5.tif0000.tif 00001.tiff && mv aligned5.tif0001.tif 00002.tiff &
 
 #wait for jobs to end
     wait < <(jobs -p)
@@ -446,7 +446,7 @@ echo "##################ffmpeg output script2#####################" >> /tmp/HDRM
 #check for tif folders
 if ! grep './' /tmp/HDRMOVac
 then
-"$(cat /tmp/Data2.txt)"/ffmpeg $wav -r $(exiftool $(ls *.{MOV,mov,mp4,MP4,mkv,MKV,avi,AVI} | grep -v 'HDR_' | head -1) | grep 'Video Frame Rate' | cut -d ":" -f2) -i %06d.tiff $acodec -vcodec prores -pix_fmt yuv422p10le ../HDR_$(cat /tmp/HDRMOVac | head -1 | cut -d "." -f1).mov 2>> /tmp/HDRMOV_LOGS/HDR_script2_LOG.txt
+"$(cat /tmp/Data2.txt)"/ffmpeg $wav -r $(/usr/local/bin/exiftool $(ls *.{MOV,mov,mp4,MP4,mkv,MKV,avi,AVI} | grep -v 'HDR_' | head -1) | grep 'Video Frame Rate' | cut -d ":" -f2) -i %06d.tiff $acodec -vcodec prores -pix_fmt yuv422p10le ../HDR_$(cat /tmp/HDRMOVac | head -1 | cut -d "." -f1).mov 2>> /tmp/HDRMOV_LOGS/HDR_script2_LOG.txt
 #remove tiff files and HDR mov when done
 rm -r ../$(cat /tmp/HDRMOVac | head -1 | cut -d "." -f1)
 else
@@ -495,11 +495,11 @@ fi
 #check for tif folders
 if ! grep './' /tmp/HDRMOVad
 then
-cr_W=$(echo $(exiftool $(cat /tmp/HDRMOVad | head -1) | awk '/Image Size/ { print $4,$5; exit }' | cut -d ":" -f2 | cut -d "x" -f1 ))
-cr_H=$(echo $(exiftool $(cat /tmp/HDRMOVad | head -1) | awk '/Image Size/ { print $4,$5; exit }' | cut -d ":" -f2 | cut -d "x" -f2 ))
+cr_W=$(echo $(/usr/local/bin/exiftool $(cat /tmp/HDRMOVad | head -1) | awk '/Image Size/ { print $4,$5; exit }' | cut -d ":" -f2 | cut -d "x" -f1 ))
+cr_H=$(echo $(/usr/local/bin/exiftool $(cat /tmp/HDRMOVad | head -1) | awk '/Image Size/ { print $4,$5; exit }' | cut -d ":" -f2 | cut -d "x" -f2 ))
 else
-cr_W=$(echo $(exiftool $(echo *_000000.tif) | awk '/Image Size/ { print $4,$5; exit }' | cut -d ":" -f2 | cut -d "x" -f1 ))
-cr_H=$(echo $(exiftool $(echo *_000000.tif) | awk '/Image Size/ { print $4,$5; exit }' | cut -d ":" -f2 | cut -d "x" -f2 ))
+cr_W=$(echo $(/usr/local/bin/exiftool $(echo *_000000.tif) | awk '/Image Size/ { print $4,$5; exit }' | cut -d ":" -f2 | cut -d "x" -f1 ))
+cr_H=$(echo $(/usr/local/bin/exiftool $(echo *_000000.tif) | awk '/Image Size/ { print $4,$5; exit }' | cut -d ":" -f2 | cut -d "x" -f2 ))
 fi
 cr_Ws=$(echo $cr_W*0.98 | bc -l | cut -d "." -f1)
 cr_Hs=$(echo $cr_H*0.98 | bc -l | cut -d "." -f1)
@@ -511,15 +511,15 @@ while grep -E "tif" <<< $(find . -maxdepth 1 -iname '*.tif')
 do
 
 #align images and rename
-/Applications/Hugin/Hugin.app/Contents/MacOS/align_image_stack -a aligned.tif $(find -s . -maxdepth 1 -iname '*.tif' | awk 'FNR == 1') $(find -s . -maxdepth 1 -iname '*.tif' | awk 'FNR == 2') && mv aligned.tif0000.tif 1.tiff && mv aligned.tif0001.tif 2.tiff & pid1=$!
+/Applications/Hugin/Hugin.app/Contents/MacOS/align_image_stack -a aligned.tif $(find -s . -maxdepth 1 -iname '*.tif' | awk 'FNR == 1') $(find -s . -maxdepth 1 -iname '*.tif' | awk 'FNR == 2') && mv aligned.tif0000.tif 1.tiff && mv aligned.tif0001.tif 2.tiff &
 
-/Applications/Hugin/Hugin.app/Contents/MacOS/align_image_stack -a aligned2.tif $(find -s . -maxdepth 1 -iname '*.tif' | awk 'FNR == 2') $(find -s . -maxdepth 1 -iname '*.tif' | awk 'FNR == 3') && mv aligned2.tif0000.tif 01.tiff && mv aligned2.tif0001.tif 02.tiff & pid2=$!
+/Applications/Hugin/Hugin.app/Contents/MacOS/align_image_stack -a aligned2.tif $(find -s . -maxdepth 1 -iname '*.tif' | awk 'FNR == 2') $(find -s . -maxdepth 1 -iname '*.tif' | awk 'FNR == 3') && mv aligned2.tif0000.tif 01.tiff && mv aligned2.tif0001.tif 02.tiff &
 
-/Applications/Hugin/Hugin.app/Contents/MacOS/align_image_stack -a aligned3.tif $(find -s . -maxdepth 1 -iname '*.tif' | awk 'FNR == 3') $(find -s . -maxdepth 1 -iname '*.tif' | awk 'FNR == 4') && mv aligned3.tif0000.tif 001.tiff && mv aligned3.tif0001.tif 002.tiff & pid3=$!
+/Applications/Hugin/Hugin.app/Contents/MacOS/align_image_stack -a aligned3.tif $(find -s . -maxdepth 1 -iname '*.tif' | awk 'FNR == 3') $(find -s . -maxdepth 1 -iname '*.tif' | awk 'FNR == 4') && mv aligned3.tif0000.tif 001.tiff && mv aligned3.tif0001.tif 002.tiff &
 
-/Applications/Hugin/Hugin.app/Contents/MacOS/align_image_stack -a aligned4.tif $(find -s . -maxdepth 1 -iname '*.tif' | awk 'FNR == 4') $(find -s . -maxdepth 1 -iname '*.tif' | awk 'FNR == 5') && mv aligned4.tif0000.tif 0001.tiff && mv aligned4.tif0001.tif 0002.tiff & pid4=$!
+/Applications/Hugin/Hugin.app/Contents/MacOS/align_image_stack -a aligned4.tif $(find -s . -maxdepth 1 -iname '*.tif' | awk 'FNR == 4') $(find -s . -maxdepth 1 -iname '*.tif' | awk 'FNR == 5') && mv aligned4.tif0000.tif 0001.tiff && mv aligned4.tif0001.tif 0002.tiff & 
 
-/Applications/Hugin/Hugin.app/Contents/MacOS/align_image_stack -a aligned5.tif $(find -s . -maxdepth 1 -iname '*.tif' | awk 'FNR == 5') $(find -s . -maxdepth 1 -iname '*.tif' | awk 'FNR == 6') && mv aligned5.tif0000.tif 00001.tiff && mv aligned5.tif0001.tif 00002.tiff & pid5=$!
+/Applications/Hugin/Hugin.app/Contents/MacOS/align_image_stack -a aligned5.tif $(find -s . -maxdepth 1 -iname '*.tif' | awk 'FNR == 5') $(find -s . -maxdepth 1 -iname '*.tif' | awk 'FNR == 6') && mv aligned5.tif0000.tif 00001.tiff && mv aligned5.tif0001.tif 00002.tiff &
 
 #wait for jobs to end
     wait < <(jobs -p)
@@ -577,7 +577,7 @@ echo "##################ffmpeg output script3#####################" >> /tmp/HDRM
 #check for tif folders
 if ! grep './' /tmp/HDRMOVad
 then
-"$(cat /tmp/Data2.txt)"/ffmpeg $wav -r $(exiftool $(ls *.{MOV,mov,mp4,MP4,mkv,MKV,avi,AVI} | grep -v 'HDR_' | head -1) | grep 'Video Frame Rate' | cut -d ":" -f2) -i %06d.tiff $acodec -vcodec prores -pix_fmt yuv422p10le ../HDR_$(cat /tmp/HDRMOVad | head -1 | cut -d "." -f1).mov 2>> /tmp/HDRMOV_LOGS/HDR_script3_LOG.txt
+"$(cat /tmp/Data2.txt)"/ffmpeg $wav -r $(/usr/local/bin/exiftool $(ls *.{MOV,mov,mp4,MP4,mkv,MKV,avi,AVI} | grep -v 'HDR_' | head -1) | grep 'Video Frame Rate' | cut -d ":" -f2) -i %06d.tiff $acodec -vcodec prores -pix_fmt yuv422p10le ../HDR_$(cat /tmp/HDRMOVad | head -1 | cut -d "." -f1).mov 2>> /tmp/HDRMOV_LOGS/HDR_script3_LOG.txt
 #remove tiff files and HDR mov when done
 rm -r ../$(cat /tmp/HDRMOVad | head -1 | cut -d "." -f1)
 else
@@ -659,7 +659,7 @@ case "$choice" in
 clear
 echo "Follow instructions in terminal window"
 sleep 2
-brew cask install hugin
+/usr/local/bin/brew cask install hugin
 if [ -f "/Applications/Hugin/Hugin.app/Contents/MacOS/align_image_stack" ]
 then
 clear && echo "hugin is intalled and ready for use"
@@ -697,7 +697,7 @@ case "$choice" in
 clear
 echo "Follow instructions in terminal window"
 sleep 2
-brew install exiftool
+/usr/local/bin/brew install exiftool
 if [ -f "/usr/local/bin/exiftool" ]
 then
 clear && echo "exiftool is intalled and ready for use"
@@ -796,12 +796,22 @@ osascript -e 'tell application "Terminal" to close first window' & exit
 done
 EOF
 
-
 #open fps command and progress_bar.command
 chmod u=rwx /tmp/fps.command
 chmod u=rwx /tmp/progress_bar.command
 chmod u=rwx "$(cat /tmp/Data2.txt | tr -d '"' )"/HDR_MOV.command
+
+#check what´s missing
+[ ! -f "/usr/local/bin/brew" ] && brew=$(echo brew missing)
+[ ! -f "/Applications/Hugin/Hugin.app/Contents/MacOS/align_image_stack" ] && hugin=$(echo hugin missing)
+[ ! -f "/usr/local/bin/exiftool" ] && exiftool=$(echo exiftool missing)
+
+if [ x$brew$hugin$exiftool = x ]
+then
+sleep 0.2 && . /tmp/fps.command
+else
 sleep 0.2 && open /tmp/fps.command
+fi
 
 #kill ongoing command
 echo -n -e "\033]0;HDR_script\007" && osascript -e 'tell application "Terminal" to close (every window whose name contains "HDR_script")' & exit
