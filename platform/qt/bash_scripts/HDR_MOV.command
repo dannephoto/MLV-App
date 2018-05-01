@@ -187,11 +187,22 @@ if ! grep './' /tmp/HDRMOVaa
 then
 "$(cat /tmp/Data2.txt)"/ffmpeg $wav -r $(/usr/local/bin/exiftool $(ls *.{MOV,mov,mp4,MP4,mkv,MKV,avi,AVI} | grep -v 'HDR_' | head -1) | grep 'Video Frame Rate' | cut -d ":" -f2) -i %06d.tiff $acodec -vcodec prores -pix_fmt yuv422p10le ../HDR_$(cat /tmp/HDRMOVaa | head -1 | cut -d "." -f1).mov 2>> "$(cat /tmp/Data.txt)"/HDRMOV_LOG.txt
 #remove tiff files and HDR mov when done
+#check for matching MLV or else do not remove
+if [ -f "$(cat /tmp/Data3.txt)"/"$(cat /tmp/HDRMOVaa | head -1 | cut -d "." -f1)".MLV ]
+then
 rm -r ../$(cat /tmp/HDRMOVaa | head -1 | cut -d "." -f1)
+else
+mv *.{MOV,mov,mp4,MP4,mkv,MKV,avi,AVI} ../
+rm -r ../$(cat /tmp/HDRMOVaa | head -1 | cut -d "." -f1)
+fi
 else
 "$(cat /tmp/Data2.txt)"/ffmpeg $wav -r $(cat fps) -i "$(cat /tmp/HDRMOVaa | head -1 | cut -d '/' -f2 | cut -d "." -f1)"_%06d.tiff $acodec -vcodec prores -pix_fmt yuv422p10le ../HDR_$(cat /tmp/HDRMOVaa | head -1 | cut -d '/' -f2 | cut -d "." -f1).mov 2>> "$(cat /tmp/Data.txt)"/HDRMOV_LOG.txt
 #remove tiff files when done
+#check for matching MLV or else do not remove
+if [ -f "$(cat /tmp/Data3.txt)"/"$(cat /tmp/HDRMOVaa | head -1 | cut -d '/' -f2 | cut -d "." -f1)".MLV ]
+then
 rm -r ../$(cat /tmp/HDRMOVaa | head -1 | cut -d '/' -f2 | cut -d "." -f1)
+fi
 fi
 #let´s go back 
 cd -
@@ -317,11 +328,22 @@ if ! grep './' /tmp/HDRMOVab
 then
 "$(cat /tmp/Data2.txt)"/ffmpeg $wav -r $(/usr/local/bin/exiftool $(ls *.{MOV,mov,mp4,MP4,mkv,MKV,avi,AVI} | grep -v 'HDR_' | head -1) | grep 'Video Frame Rate' | cut -d ":" -f2) -i %06d.tiff $acodec -vcodec prores -pix_fmt yuv422p10le ../HDR_$(cat /tmp/HDRMOVab | head -1 | cut -d "." -f1).mov 2>> /tmp/HDRMOV_LOGS/HDR_script1_LOG.txt
 #remove tiff files and HDR mov when done
+#check for matching MLV or else do not remove
+if [ -f "$(cat /tmp/Data3.txt)"/"$(cat /tmp/HDRMOVab | head -1 | cut -d "." -f1)".MLV ]
+then
 rm -r ../$(cat /tmp/HDRMOVab | head -1 | cut -d "." -f1)
+else
+mv *.{MOV,mov,mp4,MP4,mkv,MKV,avi,AVI} ../
+rm -r ../$(cat /tmp/HDRMOVab | head -1 | cut -d "." -f1)
+fi
 else
 "$(cat /tmp/Data2.txt)"/ffmpeg $wav -r $(cat fps) -i "$(cat /tmp/HDRMOVab | head -1 | cut -d '/' -f2 | cut -d "." -f1)"_%06d.tiff $acodec -vcodec prores -pix_fmt yuv422p10le ../HDR_$(cat /tmp/HDRMOVab | head -1 | cut -d '/' -f2 | cut -d "." -f1).mov 2>> /tmp/HDRMOV_LOGS/HDR_script1_LOG.txt
 #remove tiff files when done
+#check for matching MLV or else do not remove
+if [ -f "$(cat /tmp/Data3.txt)"/"$(cat /tmp/HDRMOVab | head -1 | cut -d '/' -f2 | cut -d "." -f1)".MLV ]
+then
 rm -r ../$(cat /tmp/HDRMOVab | head -1 | cut -d '/' -f2 | cut -d "." -f1)
+fi
 fi
 #let´s go back 
 cd -
@@ -448,11 +470,22 @@ if ! grep './' /tmp/HDRMOVac
 then
 "$(cat /tmp/Data2.txt)"/ffmpeg $wav -r $(/usr/local/bin/exiftool $(ls *.{MOV,mov,mp4,MP4,mkv,MKV,avi,AVI} | grep -v 'HDR_' | head -1) | grep 'Video Frame Rate' | cut -d ":" -f2) -i %06d.tiff $acodec -vcodec prores -pix_fmt yuv422p10le ../HDR_$(cat /tmp/HDRMOVac | head -1 | cut -d "." -f1).mov 2>> /tmp/HDRMOV_LOGS/HDR_script2_LOG.txt
 #remove tiff files and HDR mov when done
+#check for matching MLV or else do not remove
+if [ -f "$(cat /tmp/Data3.txt)"/"$(cat /tmp/HDRMOVac | head -1 | cut -d "." -f1)".MLV ]
+then
 rm -r ../$(cat /tmp/HDRMOVac | head -1 | cut -d "." -f1)
+else
+mv *.{MOV,mov,mp4,MP4,mkv,MKV,avi,AVI} ../
+rm -r ../$(cat /tmp/HDRMOVac | head -1 | cut -d "." -f1)
+fi
 else
 "$(cat /tmp/Data2.txt)"/ffmpeg $wav -r $(cat fps) -i "$(cat /tmp/HDRMOVac | head -1 | cut -d '/' -f2 | cut -d "." -f1)"_%06d.tiff $acodec -vcodec prores -pix_fmt yuv422p10le ../HDR_$(cat /tmp/HDRMOVac | head -1 | cut -d '/' -f2 | cut -d "." -f1).mov 2>> /tmp/HDRMOV_LOGS/HDR_script2_LOG.txt
 #remove tiff files when done
+#check for matching MLV or else do not remove
+if [ -f "$(cat /tmp/Data3.txt)"/"$(cat /tmp/HDRMOVac | head -1 | cut -d '/' -f2 | cut -d "." -f1)".MLV ]
+then
 rm -r ../$(cat /tmp/HDRMOVac | head -1 | cut -d '/' -f2 | cut -d "." -f1)
+fi
 fi
 #let´s go back 
 cd -
@@ -579,11 +612,22 @@ if ! grep './' /tmp/HDRMOVad
 then
 "$(cat /tmp/Data2.txt)"/ffmpeg $wav -r $(/usr/local/bin/exiftool $(ls *.{MOV,mov,mp4,MP4,mkv,MKV,avi,AVI} | grep -v 'HDR_' | head -1) | grep 'Video Frame Rate' | cut -d ":" -f2) -i %06d.tiff $acodec -vcodec prores -pix_fmt yuv422p10le ../HDR_$(cat /tmp/HDRMOVad | head -1 | cut -d "." -f1).mov 2>> /tmp/HDRMOV_LOGS/HDR_script3_LOG.txt
 #remove tiff files and HDR mov when done
+#check for matching MLV or else do not remove
+if [ -f "$(cat /tmp/Data3.txt)"/"$(cat /tmp/HDRMOVad | head -1 | cut -d "." -f1)".MLV ]
+then
 rm -r ../$(cat /tmp/HDRMOVad | head -1 | cut -d "." -f1)
+else
+mv *.{MOV,mov,mp4,MP4,mkv,MKV,avi,AVI} ../
+rm -r ../$(cat /tmp/HDRMOVad | head -1 | cut -d "." -f1)
+fi
 else
 "$(cat /tmp/Data2.txt)"/ffmpeg $wav -r $(cat fps) -i "$(cat /tmp/HDRMOVad | head -1 | cut -d '/' -f2 | cut -d "." -f1)"_%06d.tiff $acodec -vcodec prores -pix_fmt yuv422p10le ../HDR_$(cat /tmp/HDRMOVad | head -1 | cut -d '/' -f2 | cut -d "." -f1).mov 2>> /tmp/HDRMOV_LOGS/HDR_script3_LOG.txt
 #remove tiff files when done
+#check for matching MLV or else do not remove
+if [ -f "$(cat /tmp/Data3.txt)"/"$(cat /tmp/HDRMOVad | head -1 | cut -d '/' -f2 | cut -d "." -f1)".MLV ]
+then
 rm -r ../$(cat /tmp/HDRMOVad | head -1 | cut -d '/' -f2 | cut -d "." -f1)
+fi
 fi
 #let´s go back 
 cd -

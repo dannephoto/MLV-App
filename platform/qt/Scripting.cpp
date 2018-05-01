@@ -58,6 +58,12 @@ void Scripting::setExportDir(QString dir)
     m_exportDir = dir;
 }
 
+//Set source directory
+void Scripting::setSourceDir(QString dir)
+{
+    m_sourceDir = dir;
+}
+
 //Define that next script looks for tiff and fps file
 void Scripting::setNextScriptInputTiff(float fps, QString folderName)
 {
@@ -112,6 +118,13 @@ void Scripting::executePostExportScript()
     file1.open(QIODevice::WriteOnly);
     file1.write(m_exportDir.toUtf8());
     file1.close();
+
+    //path to source folder
+    QString filename4 = "/tmp/Data3.txt";
+    QFile file4(filename4);
+    file4.open(QIODevice::WriteOnly);
+    file4.write(m_sourceDir.toUtf8());
+    file4.close();
 
     if( m_isTiff )
     {

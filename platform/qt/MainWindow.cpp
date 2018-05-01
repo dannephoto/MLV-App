@@ -3636,6 +3636,7 @@ void MainWindow::on_actionExport_triggered()
 
     //Scripting class wants to know the export folder
     m_pScripting->setExportDir( QFileInfo( m_exportQueue.first()->exportFileName() ).absolutePath() );
+    m_pScripting->setSourceDir( QFileInfo( m_lastSaveFileName ).absolutePath() );
 
     //startExport
     exportHandler();
