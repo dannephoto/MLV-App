@@ -22,8 +22,6 @@
 
 #!/bin/bash
 cd "$(cat /tmp/mlvapp_path/output_folder.txt)"
-open .
-sleep 2
 #log
 rm "$(cat /tmp/mlvapp_path/output_folder.txt)"/HDRMOV_LOG.txt
 echo "$(date)" >> HDRMOV_LOG.txt
