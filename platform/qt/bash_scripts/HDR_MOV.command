@@ -74,6 +74,7 @@ split -l $(( $( wc -l < /tmp/HDRMOV ) / 4 + 1 )) /tmp/HDRMOV /tmp/HDRMOV
 rm /tmp/HDRMOV
 fi
 
+
 if grep 'MOV\|mov\|mp4\|MP4\|mkv\|MKV\|avi\|AVI\|./' /tmp/HDRMOVaa
 then
 cat <<'EOF' > /tmp/HDR_script.command
