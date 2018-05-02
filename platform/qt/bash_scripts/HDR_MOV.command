@@ -506,6 +506,7 @@ rm /tmp/HDR_script2.command
 EOF
 fi
 
+
 if grep 'MOV\|mov\|mp4\|MP4\|mkv\|MKV\|avi\|AVI\|./' /tmp/HDRMOVad
 then
 cat <<'EOF' > /tmp/HDR_script3.command
