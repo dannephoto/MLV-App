@@ -172,7 +172,7 @@ then
 wav=$(printf "%s\n" -i $(ls *.{MOV,mov,mp4,MP4,mkv,MKV,avi,AVI} | grep -v 'HDR_' | head -1 | cut -d "." -f1).wav)
 acodec=$(printf "%s\n" -c:v copy -c:a aac)
 fi
-//tif folders
+#tif folders
 if ls *.wav
 then
 wav=$(printf "%s\n" -i $(ls *.wav | awk 'FNR == 1'))
@@ -315,7 +315,7 @@ then
 wav=$(printf "%s\n" -i $(ls *.{MOV,mov,mp4,MP4,mkv,MKV,avi,AVI} | grep -v 'HDR_' | head -1 | cut -d "." -f1).wav)
 acodec=$(printf "%s\n" -c:v copy -c:a aac)
 fi
-//tif folders
+#tif folders
 if ls *.wav
 then
 wav=$(printf "%s\n" -i $(ls *.wav | awk 'FNR == 1'))
@@ -459,7 +459,7 @@ then
 wav=$(printf "%s\n" -i $(ls *.{MOV,mov,mp4,MP4,mkv,MKV,avi,AVI} | grep -v 'HDR_' | head -1 | cut -d "." -f1).wav)
 acodec=$(printf "%s\n" -c:v copy -c:a aac)
 fi
-//tif folders
+#tif folders
 if ls *.wav
 then
 wav=$(printf "%s\n" -i $(ls *.wav | awk 'FNR == 1'))
@@ -603,7 +603,7 @@ then
 wav=$(printf "%s\n" -i $(ls *.{MOV,mov,mp4,MP4,mkv,MKV,avi,AVI} | grep -v 'HDR_' | head -1 | cut -d "." -f1).wav)
 acodec=$(printf "%s\n" -c:v copy -c:a aac)
 fi
-//tif folders
+#tif folders
 if ls *.wav
 then
 wav=$(printf "%s\n" -i $(ls *.wav | awk 'FNR == 1'))
