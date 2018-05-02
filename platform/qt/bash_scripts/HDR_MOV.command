@@ -21,16 +21,18 @@
 #Drop HDR MOV files into a folder and run the script i terminal from within the folder with MOV files. Hit enter when prompted
 
 #!/bin/bash
-cd "$(cat /tmp/Data.txt)"
+cd "$(cat /tmp/mlvapp_path/output_folder.txt)"
+open .
+sleep 2
 #log
-rm "$(cat /tmp/Data.txt)"/HDRMOV_LOG.txt
+rm "$(cat /tmp/mlvapp_path/output_folder.txt)"/HDRMOV_LOG.txt
 echo "$(date)" >> HDRMOV_LOG.txt
 echo "##################HDR_MOV.command#####################" >> HDRMOV_LOG.txt
 echo "More logs to be found in here /tmp/HDRMOV_LOGS" >> HDRMOV_LOG.txt
 echo "" >> HDRMOV_LOG.txt
 echo "###Checking for paths###" >> HDRMOV_LOG.txt
-echo outputpath: "$(cat /tmp/Data.txt)" >> HDRMOV_LOG.txt
-echo applicationpath: "$(cat /tmp/Data2.txt)" >> HDRMOV_LOG.txt
+echo outputpath: "$(cat /tmp/mlvapp_path/output_folder.txt)" >> HDRMOV_LOG.txt
+echo applicationpath: "$(cat /tmp/mlvapp_path/app_path.txt)" >> HDRMOV_LOG.txt
 echo "" >> HDRMOV_LOG.txt
 echo "###Checking for dependencies###" >> HDRMOV_LOG.txt
 if [ -f "/usr/local/bin/brew" ]
@@ -62,9 +64,9 @@ rm /tmp/progress_bar.command
  
 #list files for multiprocessing
 #first check for tif creation
-if [ -f /tmp/tif_creation ]
+if [ -f /tmp/mlvapp_path/tif_creation ]
 then
-rm /tmp/tif_creation
+rm /tmp/mlvapp_path/tif_creation
 find . -maxdepth 2 -name '*.tif' -print0 | xargs -0 -n1 dirname | sort --unique | grep -v HDR_ORIGINALS > /tmp/HDRMOV
 split -l $(( $( wc -l < /tmp/HDRMOV ) / 4 + 1 )) /tmp/HDRMOV /tmp/HDRMOV
 rm /tmp/HDRMOV
@@ -78,7 +80,7 @@ if grep 'MOV\|mov\|mp4\|MP4\|mkv\|MKV\|avi\|AVI\|./' /tmp/HDRMOVaa
 then
 cat <<'EOF' > /tmp/HDR_script.command
 #!/bin/bash
-cd "$(cat /tmp/Data.txt)"
+cd "$(cat /tmp/mlvapp_path/output_folder.txt)"
 
 #progress_bar
 open /tmp/progress_bar.command &
@@ -96,7 +98,7 @@ mkdir -p $(cat /tmp/HDRMOVaa | head -1 | cut -d "." -f1)
 mv $(cat /tmp/HDRMOVaa | head -1) $(cat /tmp/HDRMOVaa | head -1 | cut -d "." -f1)
 cd "$(cat /tmp/HDRMOVaa | head -1 | cut -d "." -f1)"
 #spit out tif files
-"$(cat /tmp/Data2.txt)"/ffmpeg -i $(cat /tmp/HDRMOVaa | head -1) -pix_fmt rgb24 %06d.tif
+"$(cat /tmp/mlvapp_path/app_path.txt)"/ffmpeg -i $(cat /tmp/HDRMOVaa | head -1) -pix_fmt rgb24 %06d.tif
 else
 #seems we have tif folders
 cd "$(cat /tmp/HDRMOVaa | head -1 | cut -d '/' -f2)"
@@ -138,16 +140,16 @@ if ! ls /tmp/KILLMOV
 then 
 #enfuse workflow. Needs crop to care for align processing. Roundtrip because of enfuse interpolation causing flicker otherwise
 #output cropped and aligned images
-"$(cat /tmp/Data2.txt)"/ffmpeg -i 00001.tiff -pix_fmt rgb24 -vf $crp_fix 00001b.tiff &
-"$(cat /tmp/Data2.txt)"/ffmpeg -i 00002.tiff -pix_fmt rgb24 -vf $crp_fix 00002b.tiff &
-"$(cat /tmp/Data2.txt)"/ffmpeg -i 0001.tiff -pix_fmt rgb24 -vf $crp_fix 0001b.tiff &
-"$(cat /tmp/Data2.txt)"/ffmpeg -i 0002.tiff -pix_fmt rgb24 -vf $crp_fix 0002b.tiff &
-"$(cat /tmp/Data2.txt)"/ffmpeg -i 001.tiff -pix_fmt rgb24 -vf $crp_fix 001b.tiff &
-"$(cat /tmp/Data2.txt)"/ffmpeg -i 002.tiff -pix_fmt rgb24 -vf $crp_fix 002b.tiff &
-"$(cat /tmp/Data2.txt)"/ffmpeg -i 01.tiff -pix_fmt rgb24 -vf $crp_fix 01b.tiff &
-"$(cat /tmp/Data2.txt)"/ffmpeg -i 02.tiff -pix_fmt rgb24 -vf $crp_fix 02b.tiff &
-"$(cat /tmp/Data2.txt)"/ffmpeg -i 1.tiff -pix_fmt rgb24 -vf $crp_fix 1b.tiff &
-"$(cat /tmp/Data2.txt)"/ffmpeg -i 2.tiff -pix_fmt rgb24 -vf $crp_fix 2b.tiff &
+"$(cat /tmp/mlvapp_path/app_path.txt)"/ffmpeg -i 00001.tiff -pix_fmt rgb24 -vf $crp_fix 00001b.tiff &
+"$(cat /tmp/mlvapp_path/app_path.txt)"/ffmpeg -i 00002.tiff -pix_fmt rgb24 -vf $crp_fix 00002b.tiff &
+"$(cat /tmp/mlvapp_path/app_path.txt)"/ffmpeg -i 0001.tiff -pix_fmt rgb24 -vf $crp_fix 0001b.tiff &
+"$(cat /tmp/mlvapp_path/app_path.txt)"/ffmpeg -i 0002.tiff -pix_fmt rgb24 -vf $crp_fix 0002b.tiff &
+"$(cat /tmp/mlvapp_path/app_path.txt)"/ffmpeg -i 001.tiff -pix_fmt rgb24 -vf $crp_fix 001b.tiff &
+"$(cat /tmp/mlvapp_path/app_path.txt)"/ffmpeg -i 002.tiff -pix_fmt rgb24 -vf $crp_fix 002b.tiff &
+"$(cat /tmp/mlvapp_path/app_path.txt)"/ffmpeg -i 01.tiff -pix_fmt rgb24 -vf $crp_fix 01b.tiff &
+"$(cat /tmp/mlvapp_path/app_path.txt)"/ffmpeg -i 02.tiff -pix_fmt rgb24 -vf $crp_fix 02b.tiff &
+"$(cat /tmp/mlvapp_path/app_path.txt)"/ffmpeg -i 1.tiff -pix_fmt rgb24 -vf $crp_fix 1b.tiff &
+"$(cat /tmp/mlvapp_path/app_path.txt)"/ffmpeg -i 2.tiff -pix_fmt rgb24 -vf $crp_fix 2b.tiff &
 #wait for jobs to end
     wait < <(jobs -p)
 
@@ -166,9 +168,9 @@ fi
 done
 
 #check for audio
-if ! [ x"$("$(cat /tmp/Data2.txt)"/ffmpeg -i $(ls *.{MOV,mov,mp4,MP4,mkv,MKV,avi,AVI} | grep -v 'HDR_' | head -1) 2>&1 | grep Audio)" = x ]
+if ! [ x"$("$(cat /tmp/mlvapp_path/app_path.txt)"/ffmpeg -i $(ls *.{MOV,mov,mp4,MP4,mkv,MKV,avi,AVI} | grep -v 'HDR_' | head -1) 2>&1 | grep Audio)" = x ]
 then 
-"$(cat /tmp/Data2.txt)"/ffmpeg -i $(ls *.{MOV,mov,mp4,MP4,mkv,MKV,avi,AVI} | grep -v 'HDR_' | head -1) -vn -acodec copy $(ls *.{MOV,mov,mp4,MP4,mkv,MKV,avi,AVI} | grep -v 'HDR_' | head -1 | cut -d "." -f1).wav
+"$(cat /tmp/mlvapp_path/app_path.txt)"/ffmpeg -i $(ls *.{MOV,mov,mp4,MP4,mkv,MKV,avi,AVI} | grep -v 'HDR_' | head -1) -vn -acodec copy $(ls *.{MOV,mov,mp4,MP4,mkv,MKV,avi,AVI} | grep -v 'HDR_' | head -1 | cut -d "." -f1).wav
 wav=$(printf "%s\n" -i $(ls *.{MOV,mov,mp4,MP4,mkv,MKV,avi,AVI} | grep -v 'HDR_' | head -1 | cut -d "." -f1).wav)
 acodec=$(printf "%s\n" -c:v copy -c:a aac)
 fi
@@ -185,10 +187,11 @@ echo "##################ffmpeg output script#####################" >> HDRMOV_LOG
 #check for tif folders
 if ! grep './' /tmp/HDRMOVaa
 then
-"$(cat /tmp/Data2.txt)"/ffmpeg $wav -r $(/usr/local/bin/exiftool $(ls *.{MOV,mov,mp4,MP4,mkv,MKV,avi,AVI} | grep -v 'HDR_' | head -1) | grep 'Video Frame Rate' | cut -d ":" -f2) -i %06d.tiff $acodec -vcodec prores -pix_fmt yuv422p10le ../HDR_$(cat /tmp/HDRMOVaa | head -1 | cut -d "." -f1).mov 2>> "$(cat /tmp/Data.txt)"/HDRMOV_LOG.txt
+"$(cat /tmp/mlvapp_path/app_path.txt)"/ffmpeg $wav -r $(/usr/local/bin/exiftool $(ls *.{MOV,mov,mp4,MP4,mkv,MKV,avi,AVI} | grep -v 'HDR_' | head -1) | grep 'Video Frame Rate' | cut -d ":" -f2) -i %06d.tiff $acodec -vcodec prores -pix_fmt yuv422p10le ../HDR_$(cat /tmp/HDRMOVaa | head -1 | cut -d "." -f1).mov 2>> "$(cat /tmp/mlvapp_path/output_folder.txt)"/HDRMOV_LOG.txt
 #remove tiff files and HDR mov when done
 #check for matching MLV or else do not remove
-if [ -f "$(cat /tmp/Data3.txt)"/"$(cat /tmp/HDRMOVaa | head -1 | cut -d "." -f1)".MLV ]
+check="$(cat /tmp/HDRMOVaa | head -1 | cut -d "." -f1)".MLV
+if grep "$check" <<< $(cat /tmp/mlvapp_path/file_names.txt)
 then
 rm -r ../$(cat /tmp/HDRMOVaa | head -1 | cut -d "." -f1)
 else
@@ -196,10 +199,11 @@ mv *.{MOV,mov,mp4,MP4,mkv,MKV,avi,AVI} ../
 rm -r ../$(cat /tmp/HDRMOVaa | head -1 | cut -d "." -f1)
 fi
 else
-"$(cat /tmp/Data2.txt)"/ffmpeg $wav -r $(cat fps) -i "$(cat /tmp/HDRMOVaa | head -1 | cut -d '/' -f2 | cut -d "." -f1)"_%06d.tiff $acodec -vcodec prores -pix_fmt yuv422p10le ../HDR_$(cat /tmp/HDRMOVaa | head -1 | cut -d '/' -f2 | cut -d "." -f1).mov 2>> "$(cat /tmp/Data.txt)"/HDRMOV_LOG.txt
+"$(cat /tmp/mlvapp_path/app_path.txt)"/ffmpeg $wav -r $(cat fps) -i "$(cat /tmp/HDRMOVaa | head -1 | cut -d '/' -f2 | cut -d "." -f1)"_%06d.tiff $acodec -vcodec prores -pix_fmt yuv422p10le ../HDR_$(cat /tmp/HDRMOVaa | head -1 | cut -d '/' -f2 | cut -d "." -f1).mov 2>> "$(cat /tmp/mlvapp_path/output_folder.txt)"/HDRMOV_LOG.txt
 #remove tiff files when done
 #check for matching MLV or else do not remove
-if [ -f "$(cat /tmp/Data3.txt)"/"$(cat /tmp/HDRMOVaa | head -1 | cut -d '/' -f2 | cut -d "." -f1)".MLV ]
+check="$(cat /tmp/HDRMOVaa | head -1 | cut -d '/' -f2 | cut -d "." -f1)".MLV
+if grep "$check" <<< $(cat /tmp/mlvapp_path/file_names.txt)
 then
 rm -r ../$(cat /tmp/HDRMOVaa | head -1 | cut -d '/' -f2 | cut -d "." -f1)
 fi
@@ -222,7 +226,7 @@ if grep 'MOV\|mov\|mp4\|MP4\|mkv\|MKV\|avi\|AVI\|./' /tmp/HDRMOVab
 then
 cat <<'EOF' > /tmp/HDR_script1.command
 #!/bin/bash
-cd "$(cat /tmp/Data.txt)"
+cd "$(cat /tmp/mlvapp_path/output_folder.txt)"
 
 #log
 echo "##################HDR_script1.command#####################" >> /tmp/HDRMOV_LOGS/HDR_script1_LOG.txt
@@ -236,7 +240,7 @@ mkdir -p $(cat /tmp/HDRMOVab | head -1 | cut -d "." -f1)
 mv $(cat /tmp/HDRMOVab | head -1) $(cat /tmp/HDRMOVab | head -1 | cut -d "." -f1)
 cd "$(cat /tmp/HDRMOVab | head -1 | cut -d "." -f1)"
 #spit out tif files
-"$(cat /tmp/Data2.txt)"/ffmpeg -i $(cat /tmp/HDRMOVab | head -1) -pix_fmt rgb24 %06d.tif
+"$(cat /tmp/mlvapp_path/app_path.txt)"/ffmpeg -i $(cat /tmp/HDRMOVab | head -1) -pix_fmt rgb24 %06d.tif
 else
 #seems we have tif folders
 cd "$(cat /tmp/HDRMOVab | head -1 | cut -d '/' -f2)"
@@ -279,16 +283,16 @@ if ! ls /tmp/KILLMOV
 then 
 #enfuse workflow. Needs crop to care for align processing. Roundtrip because of enfuse interpolation causing flicker otherwise
 #output cropped and aligned images
-"$(cat /tmp/Data2.txt)"/ffmpeg -i 00001.tiff -pix_fmt rgb24 -vf $crp_fix 00001b.tiff &
-"$(cat /tmp/Data2.txt)"/ffmpeg -i 00002.tiff -pix_fmt rgb24 -vf $crp_fix 00002b.tiff &
-"$(cat /tmp/Data2.txt)"/ffmpeg -i 0001.tiff -pix_fmt rgb24 -vf $crp_fix 0001b.tiff &
-"$(cat /tmp/Data2.txt)"/ffmpeg -i 0002.tiff -pix_fmt rgb24 -vf $crp_fix 0002b.tiff &
-"$(cat /tmp/Data2.txt)"/ffmpeg -i 001.tiff -pix_fmt rgb24 -vf $crp_fix 001b.tiff &
-"$(cat /tmp/Data2.txt)"/ffmpeg -i 002.tiff -pix_fmt rgb24 -vf $crp_fix 002b.tiff &
-"$(cat /tmp/Data2.txt)"/ffmpeg -i 01.tiff -pix_fmt rgb24 -vf $crp_fix 01b.tiff &
-"$(cat /tmp/Data2.txt)"/ffmpeg -i 02.tiff -pix_fmt rgb24 -vf $crp_fix 02b.tiff &
-"$(cat /tmp/Data2.txt)"/ffmpeg -i 1.tiff -pix_fmt rgb24 -vf $crp_fix 1b.tiff &
-"$(cat /tmp/Data2.txt)"/ffmpeg -i 2.tiff -pix_fmt rgb24 -vf $crp_fix 2b.tiff &
+"$(cat /tmp/mlvapp_path/app_path.txt)"/ffmpeg -i 00001.tiff -pix_fmt rgb24 -vf $crp_fix 00001b.tiff &
+"$(cat /tmp/mlvapp_path/app_path.txt)"/ffmpeg -i 00002.tiff -pix_fmt rgb24 -vf $crp_fix 00002b.tiff &
+"$(cat /tmp/mlvapp_path/app_path.txt)"/ffmpeg -i 0001.tiff -pix_fmt rgb24 -vf $crp_fix 0001b.tiff &
+"$(cat /tmp/mlvapp_path/app_path.txt)"/ffmpeg -i 0002.tiff -pix_fmt rgb24 -vf $crp_fix 0002b.tiff &
+"$(cat /tmp/mlvapp_path/app_path.txt)"/ffmpeg -i 001.tiff -pix_fmt rgb24 -vf $crp_fix 001b.tiff &
+"$(cat /tmp/mlvapp_path/app_path.txt)"/ffmpeg -i 002.tiff -pix_fmt rgb24 -vf $crp_fix 002b.tiff &
+"$(cat /tmp/mlvapp_path/app_path.txt)"/ffmpeg -i 01.tiff -pix_fmt rgb24 -vf $crp_fix 01b.tiff &
+"$(cat /tmp/mlvapp_path/app_path.txt)"/ffmpeg -i 02.tiff -pix_fmt rgb24 -vf $crp_fix 02b.tiff &
+"$(cat /tmp/mlvapp_path/app_path.txt)"/ffmpeg -i 1.tiff -pix_fmt rgb24 -vf $crp_fix 1b.tiff &
+"$(cat /tmp/mlvapp_path/app_path.txt)"/ffmpeg -i 2.tiff -pix_fmt rgb24 -vf $crp_fix 2b.tiff &
 #wait for jobs to end
     wait < <(jobs -p)
 
@@ -307,9 +311,9 @@ fi
 done
 
 #check for audio
-if ! [ x"$("$(cat /tmp/Data2.txt)"/ffmpeg -i $(ls *.{MOV,mov,mp4,MP4,mkv,MKV,avi,AVI} | grep -v 'HDR_' | head -1) 2>&1 | grep Audio)" = x ]
+if ! [ x"$("$(cat /tmp/mlvapp_path/app_path.txt)"/ffmpeg -i $(ls *.{MOV,mov,mp4,MP4,mkv,MKV,avi,AVI} | grep -v 'HDR_' | head -1) 2>&1 | grep Audio)" = x ]
 then 
-"$(cat /tmp/Data2.txt)"/ffmpeg -i $(ls *.{MOV,mov,mp4,MP4,mkv,MKV,avi,AVI} | grep -v 'HDR_' | head -1) -vn -acodec copy $(ls *.{MOV,mov,mp4,MP4,mkv,MKV,avi,AVI} | grep -v 'HDR_' | head -1 | cut -d "." -f1).wav
+"$(cat /tmp/mlvapp_path/app_path.txt)"/ffmpeg -i $(ls *.{MOV,mov,mp4,MP4,mkv,MKV,avi,AVI} | grep -v 'HDR_' | head -1) -vn -acodec copy $(ls *.{MOV,mov,mp4,MP4,mkv,MKV,avi,AVI} | grep -v 'HDR_' | head -1 | cut -d "." -f1).wav
 wav=$(printf "%s\n" -i $(ls *.{MOV,mov,mp4,MP4,mkv,MKV,avi,AVI} | grep -v 'HDR_' | head -1 | cut -d "." -f1).wav)
 acodec=$(printf "%s\n" -c:v copy -c:a aac)
 fi
@@ -326,10 +330,11 @@ echo "##################ffmpeg output script1#####################" >> /tmp/HDRM
 #check for tif folders
 if ! grep './' /tmp/HDRMOVab
 then
-"$(cat /tmp/Data2.txt)"/ffmpeg $wav -r $(/usr/local/bin/exiftool $(ls *.{MOV,mov,mp4,MP4,mkv,MKV,avi,AVI} | grep -v 'HDR_' | head -1) | grep 'Video Frame Rate' | cut -d ":" -f2) -i %06d.tiff $acodec -vcodec prores -pix_fmt yuv422p10le ../HDR_$(cat /tmp/HDRMOVab | head -1 | cut -d "." -f1).mov 2>> /tmp/HDRMOV_LOGS/HDR_script1_LOG.txt
+"$(cat /tmp/mlvapp_path/app_path.txt)"/ffmpeg $wav -r $(/usr/local/bin/exiftool $(ls *.{MOV,mov,mp4,MP4,mkv,MKV,avi,AVI} | grep -v 'HDR_' | head -1) | grep 'Video Frame Rate' | cut -d ":" -f2) -i %06d.tiff $acodec -vcodec prores -pix_fmt yuv422p10le ../HDR_$(cat /tmp/HDRMOVab | head -1 | cut -d "." -f1).mov 2>> /tmp/HDRMOV_LOGS/HDR_script1_LOG.txt
 #remove tiff files and HDR mov when done
 #check for matching MLV or else do not remove
-if [ -f "$(cat /tmp/Data3.txt)"/"$(cat /tmp/HDRMOVab | head -1 | cut -d "." -f1)".MLV ]
+check="$(cat /tmp/HDRMOVab | head -1 | cut -d "." -f1)".MLV
+if grep "$check" <<< $(cat /tmp/mlvapp_path/file_names.txt)
 then
 rm -r ../$(cat /tmp/HDRMOVab | head -1 | cut -d "." -f1)
 else
@@ -337,10 +342,11 @@ mv *.{MOV,mov,mp4,MP4,mkv,MKV,avi,AVI} ../
 rm -r ../$(cat /tmp/HDRMOVab | head -1 | cut -d "." -f1)
 fi
 else
-"$(cat /tmp/Data2.txt)"/ffmpeg $wav -r $(cat fps) -i "$(cat /tmp/HDRMOVab | head -1 | cut -d '/' -f2 | cut -d "." -f1)"_%06d.tiff $acodec -vcodec prores -pix_fmt yuv422p10le ../HDR_$(cat /tmp/HDRMOVab | head -1 | cut -d '/' -f2 | cut -d "." -f1).mov 2>> /tmp/HDRMOV_LOGS/HDR_script1_LOG.txt
+"$(cat /tmp/mlvapp_path/app_path.txt)"/ffmpeg $wav -r $(cat fps) -i "$(cat /tmp/HDRMOVab | head -1 | cut -d '/' -f2 | cut -d "." -f1)"_%06d.tiff $acodec -vcodec prores -pix_fmt yuv422p10le ../HDR_$(cat /tmp/HDRMOVab | head -1 | cut -d '/' -f2 | cut -d "." -f1).mov 2>> /tmp/HDRMOV_LOGS/HDR_script1_LOG.txt
 #remove tiff files when done
 #check for matching MLV or else do not remove
-if [ -f "$(cat /tmp/Data3.txt)"/"$(cat /tmp/HDRMOVab | head -1 | cut -d '/' -f2 | cut -d "." -f1)".MLV ]
+check="$(cat /tmp/HDRMOVab | head -1 | cut -d '/' -f2 | cut -d "." -f1)".MLV
+if grep "$check" <<< $(cat /tmp/mlvapp_path/file_names.txt)
 then
 rm -r ../$(cat /tmp/HDRMOVab | head -1 | cut -d '/' -f2 | cut -d "." -f1)
 fi
@@ -363,7 +369,7 @@ if grep 'MOV\|mov\|mp4\|MP4\|mkv\|MKV\|avi\|AVI\|./' /tmp/HDRMOVac
 then
 cat <<'EOF' > /tmp/HDR_script2.command
 #!/bin/bash
-cd "$(cat /tmp/Data.txt)"
+cd "$(cat /tmp/mlvapp_path/output_folder.txt)"
 
 #log
 echo "##################HDR_script2.command#####################" >> /tmp/HDRMOV_LOGS/HDR_script2_LOG.txt
@@ -377,7 +383,7 @@ mkdir -p $(cat /tmp/HDRMOVac | head -1 | cut -d "." -f1)
 mv $(cat /tmp/HDRMOVac | head -1) $(cat /tmp/HDRMOVac | head -1 | cut -d "." -f1)
 cd "$(cat /tmp/HDRMOVac | head -1 | cut -d "." -f1)"
 #spit out tif files
-"$(cat /tmp/Data2.txt)"/ffmpeg -i $(cat /tmp/HDRMOVac | head -1) -pix_fmt rgb24 %06d.tif
+"$(cat /tmp/mlvapp_path/app_path.txt)"/ffmpeg -i $(cat /tmp/HDRMOVac | head -1) -pix_fmt rgb24 %06d.tif
 else
 #seems we have tif folders
 cd "$(cat /tmp/HDRMOVac | head -1 | cut -d '/' -f2)"
@@ -421,16 +427,16 @@ if ! ls /tmp/KILLMOV
 then 
 #enfuse workflow. Needs crop to care for align processing. Roundtrip because of enfuse interpolation causing flicker otherwise
 #output cropped and aligned images
-"$(cat /tmp/Data2.txt)"/ffmpeg -i 00001.tiff -pix_fmt rgb24 -vf $crp_fix 00001b.tiff &
-"$(cat /tmp/Data2.txt)"/ffmpeg -i 00002.tiff -pix_fmt rgb24 -vf $crp_fix 00002b.tiff &
-"$(cat /tmp/Data2.txt)"/ffmpeg -i 0001.tiff -pix_fmt rgb24 -vf $crp_fix 0001b.tiff &
-"$(cat /tmp/Data2.txt)"/ffmpeg -i 0002.tiff -pix_fmt rgb24 -vf $crp_fix 0002b.tiff &
-"$(cat /tmp/Data2.txt)"/ffmpeg -i 001.tiff -pix_fmt rgb24 -vf $crp_fix 001b.tiff &
-"$(cat /tmp/Data2.txt)"/ffmpeg -i 002.tiff -pix_fmt rgb24 -vf $crp_fix 002b.tiff &
-"$(cat /tmp/Data2.txt)"/ffmpeg -i 01.tiff -pix_fmt rgb24 -vf $crp_fix 01b.tiff &
-"$(cat /tmp/Data2.txt)"/ffmpeg -i 02.tiff -pix_fmt rgb24 -vf $crp_fix 02b.tiff &
-"$(cat /tmp/Data2.txt)"/ffmpeg -i 1.tiff -pix_fmt rgb24 -vf $crp_fix 1b.tiff &
-"$(cat /tmp/Data2.txt)"/ffmpeg -i 2.tiff -pix_fmt rgb24 -vf $crp_fix 2b.tiff &
+"$(cat /tmp/mlvapp_path/app_path.txt)"/ffmpeg -i 00001.tiff -pix_fmt rgb24 -vf $crp_fix 00001b.tiff &
+"$(cat /tmp/mlvapp_path/app_path.txt)"/ffmpeg -i 00002.tiff -pix_fmt rgb24 -vf $crp_fix 00002b.tiff &
+"$(cat /tmp/mlvapp_path/app_path.txt)"/ffmpeg -i 0001.tiff -pix_fmt rgb24 -vf $crp_fix 0001b.tiff &
+"$(cat /tmp/mlvapp_path/app_path.txt)"/ffmpeg -i 0002.tiff -pix_fmt rgb24 -vf $crp_fix 0002b.tiff &
+"$(cat /tmp/mlvapp_path/app_path.txt)"/ffmpeg -i 001.tiff -pix_fmt rgb24 -vf $crp_fix 001b.tiff &
+"$(cat /tmp/mlvapp_path/app_path.txt)"/ffmpeg -i 002.tiff -pix_fmt rgb24 -vf $crp_fix 002b.tiff &
+"$(cat /tmp/mlvapp_path/app_path.txt)"/ffmpeg -i 01.tiff -pix_fmt rgb24 -vf $crp_fix 01b.tiff &
+"$(cat /tmp/mlvapp_path/app_path.txt)"/ffmpeg -i 02.tiff -pix_fmt rgb24 -vf $crp_fix 02b.tiff &
+"$(cat /tmp/mlvapp_path/app_path.txt)"/ffmpeg -i 1.tiff -pix_fmt rgb24 -vf $crp_fix 1b.tiff &
+"$(cat /tmp/mlvapp_path/app_path.txt)"/ffmpeg -i 2.tiff -pix_fmt rgb24 -vf $crp_fix 2b.tiff &
 #wait for jobs to end
     wait < <(jobs -p)
 
@@ -449,9 +455,9 @@ fi
 done
 
 #check for audio
-if ! [ x"$("$(cat /tmp/Data2.txt)"/ffmpeg -i $(ls *.{MOV,mov,mp4,MP4,mkv,MKV,avi,AVI} | grep -v 'HDR_' | head -1) 2>&1 | grep Audio)" = x ]
+if ! [ x"$("$(cat /tmp/mlvapp_path/app_path.txt)"/ffmpeg -i $(ls *.{MOV,mov,mp4,MP4,mkv,MKV,avi,AVI} | grep -v 'HDR_' | head -1) 2>&1 | grep Audio)" = x ]
 then 
-"$(cat /tmp/Data2.txt)"/ffmpeg -i $(ls *.{MOV,mov,mp4,MP4,mkv,MKV,avi,AVI} | grep -v 'HDR_' | head -1) -vn -acodec copy $(ls *.{MOV,mov,mp4,MP4,mkv,MKV,avi,AVI} | grep -v 'HDR_' | head -1 | cut -d "." -f1).wav
+"$(cat /tmp/mlvapp_path/app_path.txt)"/ffmpeg -i $(ls *.{MOV,mov,mp4,MP4,mkv,MKV,avi,AVI} | grep -v 'HDR_' | head -1) -vn -acodec copy $(ls *.{MOV,mov,mp4,MP4,mkv,MKV,avi,AVI} | grep -v 'HDR_' | head -1 | cut -d "." -f1).wav
 wav=$(printf "%s\n" -i $(ls *.{MOV,mov,mp4,MP4,mkv,MKV,avi,AVI} | grep -v 'HDR_' | head -1 | cut -d "." -f1).wav)
 acodec=$(printf "%s\n" -c:v copy -c:a aac)
 fi
@@ -468,10 +474,11 @@ echo "##################ffmpeg output script2#####################" >> /tmp/HDRM
 #check for tif folders
 if ! grep './' /tmp/HDRMOVac
 then
-"$(cat /tmp/Data2.txt)"/ffmpeg $wav -r $(/usr/local/bin/exiftool $(ls *.{MOV,mov,mp4,MP4,mkv,MKV,avi,AVI} | grep -v 'HDR_' | head -1) | grep 'Video Frame Rate' | cut -d ":" -f2) -i %06d.tiff $acodec -vcodec prores -pix_fmt yuv422p10le ../HDR_$(cat /tmp/HDRMOVac | head -1 | cut -d "." -f1).mov 2>> /tmp/HDRMOV_LOGS/HDR_script2_LOG.txt
+"$(cat /tmp/mlvapp_path/app_path.txt)"/ffmpeg $wav -r $(/usr/local/bin/exiftool $(ls *.{MOV,mov,mp4,MP4,mkv,MKV,avi,AVI} | grep -v 'HDR_' | head -1) | grep 'Video Frame Rate' | cut -d ":" -f2) -i %06d.tiff $acodec -vcodec prores -pix_fmt yuv422p10le ../HDR_$(cat /tmp/HDRMOVac | head -1 | cut -d "." -f1).mov 2>> /tmp/HDRMOV_LOGS/HDR_script2_LOG.txt
 #remove tiff files and HDR mov when done
 #check for matching MLV or else do not remove
-if [ -f "$(cat /tmp/Data3.txt)"/"$(cat /tmp/HDRMOVac | head -1 | cut -d "." -f1)".MLV ]
+check="$(cat /tmp/HDRMOVac | head -1 | cut -d "." -f1)".MLV
+if grep "$check" <<< $(cat /tmp/mlvapp_path/file_names.txt)
 then
 rm -r ../$(cat /tmp/HDRMOVac | head -1 | cut -d "." -f1)
 else
@@ -479,10 +486,11 @@ mv *.{MOV,mov,mp4,MP4,mkv,MKV,avi,AVI} ../
 rm -r ../$(cat /tmp/HDRMOVac | head -1 | cut -d "." -f1)
 fi
 else
-"$(cat /tmp/Data2.txt)"/ffmpeg $wav -r $(cat fps) -i "$(cat /tmp/HDRMOVac | head -1 | cut -d '/' -f2 | cut -d "." -f1)"_%06d.tiff $acodec -vcodec prores -pix_fmt yuv422p10le ../HDR_$(cat /tmp/HDRMOVac | head -1 | cut -d '/' -f2 | cut -d "." -f1).mov 2>> /tmp/HDRMOV_LOGS/HDR_script2_LOG.txt
+"$(cat /tmp/mlvapp_path/app_path.txt)"/ffmpeg $wav -r $(cat fps) -i "$(cat /tmp/HDRMOVac | head -1 | cut -d '/' -f2 | cut -d "." -f1)"_%06d.tiff $acodec -vcodec prores -pix_fmt yuv422p10le ../HDR_$(cat /tmp/HDRMOVac | head -1 | cut -d '/' -f2 | cut -d "." -f1).mov 2>> /tmp/HDRMOV_LOGS/HDR_script2_LOG.txt
 #remove tiff files when done
 #check for matching MLV or else do not remove
-if [ -f "$(cat /tmp/Data3.txt)"/"$(cat /tmp/HDRMOVac | head -1 | cut -d '/' -f2 | cut -d "." -f1)".MLV ]
+check="$(cat /tmp/HDRMOVac | head -1 | cut -d '/' -f2 | cut -d "." -f1)".MLV
+if grep "$check" <<< $(cat /tmp/mlvapp_path/file_names.txt)
 then
 rm -r ../$(cat /tmp/HDRMOVac | head -1 | cut -d '/' -f2 | cut -d "." -f1)
 fi
@@ -504,7 +512,7 @@ if grep 'MOV\|mov\|mp4\|MP4\|mkv\|MKV\|avi\|AVI\|./' /tmp/HDRMOVad
 then
 cat <<'EOF' > /tmp/HDR_script3.command
 #!/bin/bash
-cd "$(cat /tmp/Data.txt)"
+cd "$(cat /tmp/mlvapp_path/output_folder.txt)"
 
 #log
 echo "##################HDR_script3.command#####################" >> /tmp/HDRMOV_LOGS/HDR_script3_LOG.txt
@@ -518,7 +526,7 @@ mkdir -p $(cat /tmp/HDRMOVad | head -1 | cut -d "." -f1)
 mv $(cat /tmp/HDRMOVad | head -1) $(cat /tmp/HDRMOVad | head -1 | cut -d "." -f1)
 cd "$(cat /tmp/HDRMOVad | head -1 | cut -d "." -f1)"
 #spit out tif files
-"$(cat /tmp/Data2.txt)"/ffmpeg -i $(cat /tmp/HDRMOVad | head -1) -pix_fmt rgb24 %06d.tif
+"$(cat /tmp/mlvapp_path/app_path.txt)"/ffmpeg -i $(cat /tmp/HDRMOVad | head -1) -pix_fmt rgb24 %06d.tif
 else
 #seems we have tif folders
 cd "$(cat /tmp/HDRMOVad | head -1 | cut -d '/' -f2)"
@@ -563,16 +571,16 @@ then
 
 #enfuse workflow. Needs crop to care for align processing. Roundtrip because of enfuse interpolation causing flicker otherwise
 #output cropped and aligned images
-"$(cat /tmp/Data2.txt)"/ffmpeg -i 00001.tiff -pix_fmt rgb24 -vf $crp_fix 00001b.tiff &
-"$(cat /tmp/Data2.txt)"/ffmpeg -i 00002.tiff -pix_fmt rgb24 -vf $crp_fix 00002b.tiff &
-"$(cat /tmp/Data2.txt)"/ffmpeg -i 0001.tiff -pix_fmt rgb24 -vf $crp_fix 0001b.tiff &
-"$(cat /tmp/Data2.txt)"/ffmpeg -i 0002.tiff -pix_fmt rgb24 -vf $crp_fix 0002b.tiff &
-"$(cat /tmp/Data2.txt)"/ffmpeg -i 001.tiff -pix_fmt rgb24 -vf $crp_fix 001b.tiff &
-"$(cat /tmp/Data2.txt)"/ffmpeg -i 002.tiff -pix_fmt rgb24 -vf $crp_fix 002b.tiff &
-"$(cat /tmp/Data2.txt)"/ffmpeg -i 01.tiff -pix_fmt rgb24 -vf $crp_fix 01b.tiff &
-"$(cat /tmp/Data2.txt)"/ffmpeg -i 02.tiff -pix_fmt rgb24 -vf $crp_fix 02b.tiff &
-"$(cat /tmp/Data2.txt)"/ffmpeg -i 1.tiff -pix_fmt rgb24 -vf $crp_fix 1b.tiff &
-"$(cat /tmp/Data2.txt)"/ffmpeg -i 2.tiff -pix_fmt rgb24 -vf $crp_fix 2b.tiff &
+"$(cat /tmp/mlvapp_path/app_path.txt)"/ffmpeg -i 00001.tiff -pix_fmt rgb24 -vf $crp_fix 00001b.tiff &
+"$(cat /tmp/mlvapp_path/app_path.txt)"/ffmpeg -i 00002.tiff -pix_fmt rgb24 -vf $crp_fix 00002b.tiff &
+"$(cat /tmp/mlvapp_path/app_path.txt)"/ffmpeg -i 0001.tiff -pix_fmt rgb24 -vf $crp_fix 0001b.tiff &
+"$(cat /tmp/mlvapp_path/app_path.txt)"/ffmpeg -i 0002.tiff -pix_fmt rgb24 -vf $crp_fix 0002b.tiff &
+"$(cat /tmp/mlvapp_path/app_path.txt)"/ffmpeg -i 001.tiff -pix_fmt rgb24 -vf $crp_fix 001b.tiff &
+"$(cat /tmp/mlvapp_path/app_path.txt)"/ffmpeg -i 002.tiff -pix_fmt rgb24 -vf $crp_fix 002b.tiff &
+"$(cat /tmp/mlvapp_path/app_path.txt)"/ffmpeg -i 01.tiff -pix_fmt rgb24 -vf $crp_fix 01b.tiff &
+"$(cat /tmp/mlvapp_path/app_path.txt)"/ffmpeg -i 02.tiff -pix_fmt rgb24 -vf $crp_fix 02b.tiff &
+"$(cat /tmp/mlvapp_path/app_path.txt)"/ffmpeg -i 1.tiff -pix_fmt rgb24 -vf $crp_fix 1b.tiff &
+"$(cat /tmp/mlvapp_path/app_path.txt)"/ffmpeg -i 2.tiff -pix_fmt rgb24 -vf $crp_fix 2b.tiff &
 #wait for jobs to end
     wait < <(jobs -p)
 
@@ -591,9 +599,9 @@ fi
 done
 
 #check for audio
-if ! [ x"$("$(cat /tmp/Data2.txt)"/ffmpeg -i $(ls *.{MOV,mov,mp4,MP4,mkv,MKV,avi,AVI} | grep -v 'HDR_' | head -1) 2>&1 | grep Audio)" = x ]
+if ! [ x"$("$(cat /tmp/mlvapp_path/app_path.txt)"/ffmpeg -i $(ls *.{MOV,mov,mp4,MP4,mkv,MKV,avi,AVI} | grep -v 'HDR_' | head -1) 2>&1 | grep Audio)" = x ]
 then 
-"$(cat /tmp/Data2.txt)"/ffmpeg -i $(ls *.{MOV,mov,mp4,MP4,mkv,MKV,avi,AVI} | grep -v 'HDR_' | head -1) -vn -acodec copy $(ls *.{MOV,mov,mp4,MP4,mkv,MKV,avi,AVI} | grep -v 'HDR_' | head -1 | cut -d "." -f1).wav
+"$(cat /tmp/mlvapp_path/app_path.txt)"/ffmpeg -i $(ls *.{MOV,mov,mp4,MP4,mkv,MKV,avi,AVI} | grep -v 'HDR_' | head -1) -vn -acodec copy $(ls *.{MOV,mov,mp4,MP4,mkv,MKV,avi,AVI} | grep -v 'HDR_' | head -1 | cut -d "." -f1).wav
 wav=$(printf "%s\n" -i $(ls *.{MOV,mov,mp4,MP4,mkv,MKV,avi,AVI} | grep -v 'HDR_' | head -1 | cut -d "." -f1).wav)
 acodec=$(printf "%s\n" -c:v copy -c:a aac)
 fi
@@ -610,10 +618,11 @@ echo "##################ffmpeg output script3#####################" >> /tmp/HDRM
 #check for tif folders
 if ! grep './' /tmp/HDRMOVad
 then
-"$(cat /tmp/Data2.txt)"/ffmpeg $wav -r $(/usr/local/bin/exiftool $(ls *.{MOV,mov,mp4,MP4,mkv,MKV,avi,AVI} | grep -v 'HDR_' | head -1) | grep 'Video Frame Rate' | cut -d ":" -f2) -i %06d.tiff $acodec -vcodec prores -pix_fmt yuv422p10le ../HDR_$(cat /tmp/HDRMOVad | head -1 | cut -d "." -f1).mov 2>> /tmp/HDRMOV_LOGS/HDR_script3_LOG.txt
+"$(cat /tmp/mlvapp_path/app_path.txt)"/ffmpeg $wav -r $(/usr/local/bin/exiftool $(ls *.{MOV,mov,mp4,MP4,mkv,MKV,avi,AVI} | grep -v 'HDR_' | head -1) | grep 'Video Frame Rate' | cut -d ":" -f2) -i %06d.tiff $acodec -vcodec prores -pix_fmt yuv422p10le ../HDR_$(cat /tmp/HDRMOVad | head -1 | cut -d "." -f1).mov 2>> /tmp/HDRMOV_LOGS/HDR_script3_LOG.txt
 #remove tiff files and HDR mov when done
 #check for matching MLV or else do not remove
-if [ -f "$(cat /tmp/Data3.txt)"/"$(cat /tmp/HDRMOVad | head -1 | cut -d "." -f1)".MLV ]
+check="$(cat /tmp/HDRMOVad | head -1 | cut -d "." -f1)".MLV
+if grep "$check" <<< $(cat /tmp/mlvapp_path/file_names.txt)
 then
 rm -r ../$(cat /tmp/HDRMOVad | head -1 | cut -d "." -f1)
 else
@@ -621,10 +630,11 @@ mv *.{MOV,mov,mp4,MP4,mkv,MKV,avi,AVI} ../
 rm -r ../$(cat /tmp/HDRMOVad | head -1 | cut -d "." -f1)
 fi
 else
-"$(cat /tmp/Data2.txt)"/ffmpeg $wav -r $(cat fps) -i "$(cat /tmp/HDRMOVad | head -1 | cut -d '/' -f2 | cut -d "." -f1)"_%06d.tiff $acodec -vcodec prores -pix_fmt yuv422p10le ../HDR_$(cat /tmp/HDRMOVad | head -1 | cut -d '/' -f2 | cut -d "." -f1).mov 2>> /tmp/HDRMOV_LOGS/HDR_script3_LOG.txt
+"$(cat /tmp/mlvapp_path/app_path.txt)"/ffmpeg $wav -r $(cat fps) -i "$(cat /tmp/HDRMOVad | head -1 | cut -d '/' -f2 | cut -d "." -f1)"_%06d.tiff $acodec -vcodec prores -pix_fmt yuv422p10le ../HDR_$(cat /tmp/HDRMOVad | head -1 | cut -d '/' -f2 | cut -d "." -f1).mov 2>> /tmp/HDRMOV_LOGS/HDR_script3_LOG.txt
 #remove tiff files when done
 #check for matching MLV or else do not remove
-if [ -f "$(cat /tmp/Data3.txt)"/"$(cat /tmp/HDRMOVad | head -1 | cut -d '/' -f2 | cut -d "." -f1)".MLV ]
+check="$(cat /tmp/HDRMOVad | head -1 | cut -d '/' -f2 | cut -d "." -f1)".MLV
+if grep "$check" <<< $(cat /tmp/mlvapp_path/file_names.txt)
 then
 rm -r ../$(cat /tmp/HDRMOVad | head -1 | cut -d '/' -f2 | cut -d "." -f1)
 fi
@@ -645,7 +655,7 @@ fi
 #fps command
 cat <<'EOF' > /tmp/fps.command
 #!/bin/bash
-cd "$(cat /tmp/Data.txt)"
+cd "$(cat /tmp/mlvapp_path/output_folder.txt)"
 
 echo "##################fps.command#####################" >> /tmp/HDRMOV_LOGS/HDR_fps_LOG.txt
 #run the log file
@@ -770,7 +780,7 @@ chmod u=rwx /tmp/HDR_script3.command
 rm -r /tmp/HDRMOV_LOGS
 mkdir /tmp/HDRMOV_LOGS
 
-sleep 1 && . /tmp/HDR_script.command | tee -a "$(cat /tmp/Data.txt)"/HDRMOV_LOG.txt &
+sleep 1 && . /tmp/HDR_script.command | tee -a "$(cat /tmp/mlvapp_path/output_folder.txt)"/HDRMOV_LOG.txt &
 sleep 1 && . /tmp/HDR_script1.command | tee -a /tmp/HDRMOV_LOGS/HDR_script1_LOG.txt &
 sleep 1 && . /tmp/HDR_script2.command | tee -a /tmp/HDRMOV_LOGS/HDR_script2_LOG.txt &
 sleep 1 && . /tmp/HDR_script3.command | tee -a /tmp/HDRMOV_LOGS/HDR_script3_LOG.txt &
@@ -782,7 +792,7 @@ EOF
 cat <<'EOF' > /tmp/progress_bar.command
 
 #!/bin/bash
-cd "$(cat /tmp/Data.txt)"
+cd "$(cat /tmp/mlvapp_path/output_folder.txt)"
 
 patio="$PWD"
 
@@ -843,7 +853,7 @@ EOF
 #open fps command and progress_bar.command
 chmod u=rwx /tmp/fps.command
 chmod u=rwx /tmp/progress_bar.command
-chmod u=rwx "$(cat /tmp/Data2.txt | tr -d '"' )"/HDR_MOV.command
+chmod u=rwx "$(cat /tmp/mlvapp_path/app_path.txt | tr -d '"' )"/HDR_MOV.command
 
 #check what´s missing
 [ ! -f "/usr/local/bin/brew" ] && brew=$(echo brew missing)

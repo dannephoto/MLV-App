@@ -3636,7 +3636,12 @@ void MainWindow::on_actionExport_triggered()
 
     //Scripting class wants to know the export folder
     m_pScripting->setExportDir( QFileInfo( m_exportQueue.first()->exportFileName() ).absolutePath() );
-    m_pScripting->setSourceDir( QFileInfo( m_lastSaveFileName ).absolutePath() );
+    QStringList fileNames;
+    for( int i = 0; i < m_exportQueue.count(); i++ )
+    {
+        fileNames.append( m_exportQueue.at( i )->fileName() );
+    }
+    m_pScripting->setMlvFileNames( fileNames );
 
     //startExport
     exportHandler();
