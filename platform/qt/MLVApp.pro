@@ -202,7 +202,7 @@ macx: ICON = MLVAPP.icns
 QMAKE_INFO_PLIST = Info.plist
 PACKAGE_FILES.files = FFmpeg/ffmpeg #Unzip the file before building the App!!!
 PACKAGE_FILES.files += bash_scripts/HDR_MOV.command
-PACKAGE_FILES.files += bash_scripts/tif_clean.command
+PACKAGE_FILES.files += bash_scripts/TIF_CLEAN.command
 #PACKAGE_FILES.files += ../../src/mlv/llrawproc/pixelmaps/80000301_1808x727.fpm
 #PACKAGE_FILES.files += ../../src/mlv/llrawproc/pixelmaps/80000301_1808x1190.fpm
 #PACKAGE_FILES.files += ../../src/mlv/llrawproc/pixelmaps/80000301_1872x1060.fpm
@@ -233,3 +233,14 @@ QMAKE_BUNDLE_DATA += PACKAGE_FILES
 #    }
 #}
 
+linux-g++ {
+    target.path = $$(HOME)/bin
+    desktop.path = $$(HOME)/.local/share/applications
+    desktop.files += mlvapp.desktop
+    icon512.path = $$(HOME)/.local/share/icons/hicolor/512x512/apps
+    icon512.files += RetinaIMG/MLVAPP.png
+
+    INSTALLS += target desktop icon512
+
+    QMAKE_POST_LINK += tar -C $$(HOME)/bin -xvJf FFmpeg/ffmpegLinux.tar.xz --strip=1 --wildcards */ffmpeg
+}

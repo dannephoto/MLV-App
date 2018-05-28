@@ -23,14 +23,14 @@
 
 #start clean
 rm /tmp/TIFCLEAN
-rm /tmp/tif_clean.command
+rm /tmp/TIF_CLEAN.command
 
 #!/bin/bash
 cd "$(cat /tmp/mlvapp_path/output_folder.txt)"
 #log
 rm "$(cat /tmp/mlvapp_path/output_folder.txt)"/TIFCLEAN_LOG.txt
 echo "$(date)" >> TIFCLEAN_LOG.txt
-echo "##################tif_clean.command#####################" >> TIFCLEAN_LOG.txt
+echo "##################TIF_CLEAN.command#####################" >> TIFCLEAN_LOG.txt
 echo "" >> TIFCLEAN_LOG.txt
 echo "###Checking for paths###" >> TIFCLEAN_LOG.txt
 echo outputpath: "$(cat /tmp/mlvapp_path/output_folder.txt)" >> TIFCLEAN_LOG.txt
@@ -59,6 +59,7 @@ echo ""  >> TIFCLEAN_LOG.txt
 echo "take note that if you run the script for the first time
 dependencies will naturally be missing in this log file"  >> TIFCLEAN_LOG.txt
 
+cat <<'EOF' > /tmp/TIF_CLEAN.command
 ###########dependencies############
 #homebrew
 if ! [ -f "/usr/local/bin/brew" ]
@@ -89,7 +90,7 @@ sleep 2
   * ) 
 echo "invalid selection, let´s start again"
 sleep 1
-. "$(cat /tmp/mlvapp_path/app_path.txt | tr -d '"' )"/tif_clean.command
+. "$(cat /tmp/mlvapp_path/app_path.txt | tr -d '"' )"/TIF_CLEAN.command
 ;;
 esac
 fi
@@ -127,7 +128,7 @@ clear
   * ) 
 echo "invalid selection, let´s start again"
 sleep 1
-. "$(cat /tmp/mlvapp_path/app_path.txt | tr -d '"' )"/tif_clean.command
+. "$(cat /tmp/mlvapp_path/app_path.txt | tr -d '"' )"/TIF_CLEAN.command
 ;;
 esac
 fi
@@ -165,7 +166,7 @@ clear
   * ) 
 echo "invalid selection, let´s start again"
 sleep 1
-. "$(cat /tmp/mlvapp_path/app_path.txt | tr -d '"' )"/tif_clean.command
+. "$(cat /tmp/mlvapp_path/app_path.txt | tr -d '"' )"/TIF_CLEAN.command
 ;;
 esac
 fi
@@ -180,8 +181,6 @@ else
 ls *.{MOV,mov,mp4,MP4,mkv,MKV,avi,AVI} > /tmp/TIFCLEAN
 fi
 
-
-cat <<'EOF' > /tmp/tif_clean.command
 while grep 'MOV\|mov\|mp4\|MP4\|mkv\|MKV\|avi\|AVI\|./' /tmp/TIFCLEAN; do
 #enter output folder
 #LOG
@@ -201,7 +200,7 @@ else
 cd "$(cat /tmp/TIFCLEAN | head -1 | cut -d '/' -f2)"
 fi
 
-#tif_clean.command starts here
+#TIF_CLEAN.command starts here
 #first 2 files
 #1
 /Applications/Hugin/Hugin.app/Contents/MacOS/align_image_stack --use-given-order -a aligned_01.tif \
@@ -451,10 +450,10 @@ echo "$(tail -n +2 /tmp/TIFCLEAN)" > /tmp/TIFCLEAN
 cd "$(cat /tmp/mlvapp_path/output_folder.txt)"
 done
 #all done!
-rm /tmp/tif_clean.command
+rm /tmp/TIF_CLEAN.command
 EOF
 
-chmod u=rwx /tmp/tif_clean.command
-open /tmp/tif_clean.command
+chmod u=rwx /tmp/TIF_CLEAN.command
+open /tmp/TIF_CLEAN.command
 
 
